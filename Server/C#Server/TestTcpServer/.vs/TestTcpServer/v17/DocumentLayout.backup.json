@@ -1,0 +1,139 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\C#Project\\TestTcpServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|d:\\c#project\\testtcpserver\\testtcpserver\\relayserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\relayserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|d:\\c#project\\testtcpserver\\testtcpserver\\frame.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\frame.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|d:\\c#project\\testtcpserver\\testtcpserver\\protocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\protocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|D:\\C#Project\\TestTcpServer\\testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|D:\\C#Project\\TestTcpServer\\testtcpserver\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|D:\\C#Project\\TestTcpServer\\testtcpserver\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|D:\\C#Project\\TestTcpServer\\testtcpserver\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Frame.cs",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Frame.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Frame.cs",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Frame.cs",
+              "RelativeToolTip": "TestTcpServer\\Frame.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T09:48:05.028Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Protocol.cs",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Protocol.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Protocol.cs",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Protocol.cs",
+              "RelativeToolTip": "TestTcpServer\\Protocol.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAUAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T09:46:13.7Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "packages.config",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\packages.config",
+              "RelativeDocumentMoniker": "TestTcpServer\\packages.config",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\packages.config",
+              "RelativeToolTip": "TestTcpServer\\packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-04-24T09:28:08.124Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "App.config",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\App.config",
+              "RelativeDocumentMoniker": "TestTcpServer\\App.config",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\App.config",
+              "RelativeToolTip": "TestTcpServer\\App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-04-24T09:28:00.891Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RelayServer.cs",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\RelayServer.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\RelayServer.cs",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\RelayServer.cs",
+              "RelativeToolTip": "TestTcpServer\\RelayServer.cs",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAUwH0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T09:10:23.352Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Properties\\AssemblyInfo.cs",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Properties\\AssemblyInfo.cs",
+              "RelativeToolTip": "TestTcpServer\\Properties\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T09:01:40.015Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Program.cs",
+              "ToolTip": "D:\\C#Project\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeToolTip": "TestTcpServer\\Program.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAADwvxIAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T09:01:00.972Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

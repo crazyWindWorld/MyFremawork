@@ -1,0 +1,6 @@
+{
+    "handlers": [
+        "TestNet.AcegoResetPwdRsp:7009:LoginPB.AcegoResetPwdRsp:null",
+        "TestNet.Pong:4001:CommonPB.PONG:CommonPB.PING"
+    ]
+}
