@@ -2,10 +2,10 @@
 setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul
 
-echo [BAT_VERSION] stable-final-v2.2.1
+echo [BAT_VERSION] stable-final-v2.2.2
 echo [BAT_PATH] %~f0
 
-REM ===== 参数 =====
+REM ===== Parameters =====
 set "PROTO_ROOT=%~1"
 set "OUT_ROOT=%~2"
 set "PROTOC_EXE=%~3"
@@ -15,20 +15,30 @@ set "GRPC_PLUGIN=%~6"
 set "CLEAN_OUTPUT=%~7"
 set "ONLY_CHANGED=%~8"
 set "MD5_PATH=%~9"
+
+REM Check parameter misalignment (empty quote "" causes parameter shift)
+REM If CLEAN_OUTPUT is not 0 or 1, parameters are misaligned
+if not "%CLEAN_OUTPUT%"=="0" if not "%CLEAN_OUTPUT%"=="1" (
+    REM Realign parameters
+    set "MD5_PATH=%ONLY_CHANGED%"
+    set "ONLY_CHANGED=%CLEAN_OUTPUT%"
+    set "CLEAN_OUTPUT=%GRPC_PLUGIN%"
+    set "GRPC_PLUGIN="
+)
 set "STATE_FILE=%MD5_PATH%\.proto_md5.state"
 echo [CONFIG] STATE_FILE=%STATE_FILE%
 
-REM ========创建MD5文件=======
+REM ========Create MD5 Directory=======
 
-:: 1. 先检查目录是否存在，不存在则创建
+:: 1. Check if directory exists, create if not
 if not exist "%MD5_PATH%" (
-    echo 目录不存在，正在创建目录: %MD5_PATH%
+    echo Directory not exist, creating: %MD5_PATH%
     mkdir "%MD5_PATH%"
 )
 
 
 if "%PROTO_ROOT%"=="" ( echo [ERROR] PROTO_ROOT empty & exit /b 2 )
-if "%OUT_ROOT%"==""   ( echo [ERROR] OUT_ROOT empty   & exit /b 2 )
+if "%OUT_ROOT%"==""   ( echo [ERROR] OUT_ROOT empty   & exit /b 3 )
 
 if "%PROTOC_EXE%"=="" set "PROTOC_EXE=%~dp0protoc.exe"
 if "%IMPORT_ROOT%"=="" set "IMPORT_ROOT=%PROTO_ROOT%"
@@ -113,7 +123,7 @@ for /f "usebackq delims=" %%F in ("%LISTFILE%") do (
 
 del /q "%LISTFILE%" >nul 2>nul
 
-echo.
+echo:
 echo [RESULT] TOTAL=!COUNT_TOTAL! DONE=!COUNT_DONE! SKIP=!COUNT_SKIP! ERR=!COUNT_ERR!
 echo [UNITY_SUMMARY] PROTO_GEN TOTAL=!COUNT_TOTAL! DONE=!COUNT_DONE! SKIP=!COUNT_SKIP! ERR=!COUNT_ERR!
 
@@ -130,11 +140,11 @@ call :to_rel "%SRC%" REL_KEY
 
 echo [GEN ] %SRC%
 
-REM 编译前统计 .cs 数量（用于辅助判断）
+REM Count .cs files before compile (for verification)
 set /a CS_BEFORE=0
-for /f %%C in ('dir /b /a:-d "%ONE_OUT%\*.cs" 2^>nul ^| find /c /v ""') do set /a CS_BEFORE=%%C
+for /f "delims=" %%C in ('dir /b /a:-d "%ONE_OUT%\*.cs"') do set /a CS_BEFORE+=1
 
-REM 关键：proto_path 先放当前文件目录，再放 IMPORT_ROOT / PROTO_ROOT
+REM Key: proto_path first current file dir, then IMPORT_ROOT / PROTO_ROOT
 set "P_INC_A=--proto_path=%SRC_DIR%"
 set "P_INC_B=--proto_path=%IMPORT_ROOT%"
 set "P_INC_C=--proto_path=%PROTO_ROOT%"
@@ -158,16 +168,16 @@ if errorlevel 1 (
   exit /b 0
 )
 
-REM 编译后统计 .cs 数量
+REM Count .cs files after compile
 set /a CS_AFTER=0
-for /f %%C in ('dir /b /a:-d "%ONE_OUT%\*.cs" 2^>nul ^| find /c /v ""') do set /a CS_AFTER=%%C
+for /f "delims=" %%C in ('dir /b /a:-d "%ONE_OUT%\*.cs"') do set /a CS_AFTER+=1
 
 if %CS_AFTER% LSS 1 (
   echo [ERR ] No .cs generated in "%ONE_OUT%" for "%SRC%"
   set /a COUNT_ERR+=1
 ) else (
   if %CS_AFTER% GTR %CS_BEFORE% (
-    echo [OK  ] %SRC% ^(new cs: %CS_BEFORE% -> %CS_AFTER%^)
+    echo [OK  ] %SRC% ^(new cs: %CS_BEFORE% -^> %CS_AFTER%^)
   ) else (
     echo [OK  ] %SRC% ^(cs exists: %CS_AFTER%^)
   )
@@ -176,7 +186,6 @@ if %CS_AFTER% LSS 1 (
 )
 
 exit /b 0
-
 
 
 :should_compile
@@ -189,20 +198,23 @@ set "SC_KEY="
 
 call :to_rel "%SC_SRC%" SC_KEY
 
-REM 如果输出缺失，强制编译
+REM If output missing, force compile
 dir /b /a:-d "%SC_OUT%\*.cs" >nul 2>nul
 if errorlevel 1 (
-  echo [STATE_MISS] %SC_KEY% ^(reason=output_missing^)
+  echo [STATE_MISS] %SC_KEY% ^(reason:output_missing^)
   endlocal & exit /b 0
 )
 
-REM 取 MD5（第2行）
-for /f "skip=1 delims=" %%H in ('certutil -hashfile "%SC_SRC%" MD5 2^>nul') do (
+REM Get MD5 (skip first line)
+set "CERTUTIL_OUT=%TEMP%\certutil_%RANDOM%_%RANDOM%.tmp"
+certutil -hashfile "%SC_SRC%" MD5 > "%CERTUTIL_OUT%" 2>nul
+for /f "skip=1 delims=" %%H in ('type "%CERTUTIL_OUT%"') do (
   if not defined SC_MD5 set "SC_MD5=%%H"
 )
+del /q "%CERTUTIL_OUT%" >nul 2>nul
 
 if not defined SC_MD5 (
-  echo [STATE_MISS] %SC_KEY% ^(reason=md5_unavailable^)
+  echo [STATE_MISS] %SC_KEY% ^(reason:md5_unavailable^)
   endlocal & exit /b 0
 )
 
@@ -224,13 +236,13 @@ if /I "%SC_MD5%"=="%SC_OLD%" (
   echo [STATE_HIT ] %SC_KEY%
   endlocal & exit /b 1
 ) else (
-  echo [STATE_MISS] %SC_KEY% ^(reason=md5_changed_or_new^)
+  echo [STATE_MISS] %SC_KEY% ^(reason:md5_changed_or_new^)
   endlocal & exit /b 0
 )
 
 
 :update_state
-REM 参数1: 绝对SRC  参数2: 相对KEY(可空)
+REM Param1: Absolute SRC  Param2: Relative KEY(optional)
 setlocal EnableExtensions DisableDelayedExpansion
 set "US_SRC=%~1"
 set "US_KEY=%~2"
@@ -241,9 +253,12 @@ if "%US_KEY%"=="" (
   call :to_rel "%US_SRC%" US_KEY
 )
 
-for /f "skip=1 delims=" %%H in ('certutil -hashfile "%US_SRC%" MD5 2^>nul') do (
+set "CERTUTIL_OUT=%TEMP%\certutil_%RANDOM%_%RANDOM%.tmp"
+certutil -hashfile "%US_SRC%" MD5 > "%CERTUTIL_OUT%" 2>nul
+for /f "skip=1 delims=" %%H in ('type "%CERTUTIL_OUT%"') do (
   if not defined US_MD5 set "US_MD5=%%H"
 )
+del /q "%CERTUTIL_OUT%" >nul 2>nul
 
 if not defined US_MD5 (
   echo [WARN] cannot get MD5 for "%US_SRC%"
@@ -272,15 +287,13 @@ echo [STATE] %US_KEY% ^| %US_MD5%
 endlocal & exit /b 0
 
 :to_rel
-REM 用法: call :to_rel "绝对proto路径" OUT_VAR
+REM Usage: call :to_rel "absolute proto path" OUT_VAR
 setlocal EnableExtensions EnableDelayedExpansion
 set "ABS=%~1"
 set "REL=!ABS:%PROTO_ROOT%\=!"
 if /I "!REL!"=="!ABS!" (
-  REM 不在 PROTO_ROOT 下时，兜底用原路径
+  REM Not under PROTO_ROOT, use original path
   set "REL=%~1"
 )
 endlocal & set "%~2=%REL%"
 exit /b 0
-
-
