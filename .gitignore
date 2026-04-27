@@ -1,0 +1,7 @@
+Client/UnityProject/TestProject/Library
+Client/UnityProject/TestProject/Logs
+Client/UnityProject/TestProject/Temp
+Client/UnityProject/TestProject/UserSettings
+*.csproj
+*.sln
+Client/UnityProject/TestProject/.vscode
