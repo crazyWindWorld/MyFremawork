@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NetFramework.Attributes;
+//using NetFramework.Attributes;
 
 public static class NetHandlerGeneratorUtil
 {
@@ -42,14 +43,13 @@ public static class NetHandlerGeneratorUtil
                         Debug.LogError($"[NetHandlerGenerator] {type.FullName}.{method.Name} 必须是静态方法！");
                         continue;
                     }
+                    if (method.GetParameters().Length != 1)
+                    {
+                        Debug.LogError($"[NetHandlerGenerator] {type.FullName}.{method.Name} 参数数量必须为 1！");
+                        continue;
+                    }
 
-                    /*                  if (method.GetParameters().Length != 1)
-                                     {
-                                         Debug.LogError($"[NetHandlerGenerator] {type.FullName}.{method.Name} 参数数量必须为 1！");
-                                         continue;
-                                     } */
-
-                    string sig = $"{type.FullName}.{method.Name}:{attr.MsgId}:{attr.RespMsgType?.FullName ?? "null"}:{attr.ReqMsgType?.FullName ?? "null"}";
+                    string sig = $"{type.FullName}.{method.Name}:{attr.MsgId}:{attr.MsgType?.FullName ?? "null"}:{attr.ReqMsgType?.FullName ?? "null"}";
                     result.Add(sig);
                 }
             }
@@ -96,6 +96,7 @@ public static class NetHandlerGeneratorUtil
         sb.AppendLine("// ------------------------------------------------------------------------------");
         sb.AppendLine("using System;");
         sb.AppendLine("using NetFramework;");
+        sb.AppendLine("using NetFramework.Core;");
         sb.AppendLine("using UnityEngine;");
         sb.AppendLine();
         sb.AppendLine("public static class NetHandlerGenerated");

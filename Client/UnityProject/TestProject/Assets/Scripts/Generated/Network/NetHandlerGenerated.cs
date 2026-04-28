@@ -4,14 +4,14 @@
 // ------------------------------------------------------------------------------
 using System;
 using NetFramework;
+using NetFramework.Core;
 using UnityEngine;
 
 public static class NetHandlerGenerated
 {
     public static void RegisterAll()
     {
-        NetworkManager.Instance.Dispatcher.Register<LoginPB.AcegoResetPwdRsp>(7009, TestNet.AcegoResetPwdRsp);
-        NetworkManager.Instance.Dispatcher.Register<CommonPB.PONG,CommonPB.PING>(4001, TestNet.Pong);
-        Debug.Log("[AutoNetHandler] 已注册 2 个网络回调方法");
+        NetworkManager.Instance.Dispatcher.Register<LoginPB.LoginRsp>(10004, TestSocket.LoginResp);
+        Debug.Log("[AutoNetHandler] 已注册 1 个网络回调方法");
     }
 }
