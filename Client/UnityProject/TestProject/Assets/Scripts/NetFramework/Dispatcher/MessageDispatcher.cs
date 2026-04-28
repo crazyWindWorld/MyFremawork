@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Google.Protobuf;
 using UnityEngine;
 
-namespace NetFramework.Dispatcher
+namespace Fuel.NetFramework.Dispatcher
 {
     /// <summary>
     /// 消息分发器

@@ -1,6 +1,6 @@
 using System;
 
-namespace NetFramework.Protocol
+namespace Fuel.NetFramework.Protocol
 {
     /// <summary>
     /// 协议类型枚举，用于 ProtocolFactory 创建对应协议实例

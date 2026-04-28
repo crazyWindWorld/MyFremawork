@@ -6,7 +6,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 #endif
 
-namespace NetFramework.RedDot.RunTime
+namespace Fuel.RedDot.RunTime
 {
     [CreateAssetMenu(menuName = "Tools/RedDotConfigAsset", fileName = "RedDotConfigAsset")]
     public class RedDotConfigAsset : ScriptableObject

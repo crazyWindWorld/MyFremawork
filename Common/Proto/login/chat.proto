@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package loginPB;
+option go_package = "p3server/proto/loginPB";
+
+// 获取聊天token
+message GetChatTokenReq {
+}
+message GetChatTokenRsp {
+  string token = 1;
+}
+
+// token变动时推送
+message ChatTokenPush {
+  string token = 1;
+}

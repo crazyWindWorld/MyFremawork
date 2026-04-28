@@ -1,8 +1,7 @@
-﻿using NetFramework.RedDot.RunTime;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace NetFramework.RedDot.RunTime
+namespace Fuel.RedDot.RunTime
 {
     public class RedDotViewBase : MonoBehaviour
     {

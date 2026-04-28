@@ -1,6 +1,6 @@
 using System;
 
-namespace NetFramework.Core
+namespace Fuel.NetFramework.Core
 {
     /// <summary>
     /// 网络数据包模型

@@ -5,7 +5,7 @@ using Sirenix.OdinInspector;
 #endif
 using UnityEngine;
 
-namespace NetFramework.RedDot.RunTime
+namespace Fuel.RedDot.RunTime
 {
     public class RedDotTree
     {

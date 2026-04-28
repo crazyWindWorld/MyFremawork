@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace NetFramework.RedDot.RunTime
+namespace Fuel.RedDot.RunTime
 {
     public class RedDotViewNode : RedDotNodeBase
     {

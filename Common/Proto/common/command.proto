@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package commonPB;
+option go_package = "p3server/proto/commonPB";
+import "error.proto";
+
+message PING{
+  int64 client_time = 1;
+}
+
+message PONG{
+  int64 client_time = 1;
+  int64 server_time = 2;
+}
+
+enum ServerType {
+  Unknown = 0;
+  Gateway = 1;
+  GameServer = 2;
+  LoginServer = 3;
+}
+
+message GameTrace{
+  int64 role_id = 1;
+  int64 from_server_id = 2;
+  ServerType from_server_type= 3;
+  string trace_id = 4;
+  string ip = 5;
+  int64 role_server_id = 6;
+}
+
+enum ClientType{
+  CTUnknown = 0;
+  CTAndroid = 1;
+  CTIos = 2;
+  CTEditor = 3;
+  CTWindows =4;
+}
+
+enum MsgType {
+  push = 0;
+  request = 1;
+  response = 2;
+}
+
+enum CommonErrorCode{
+  ErrEnterInvalid = 0 [(basepb.error_info) = {tip_desc:"输入内容无限，请重新输入"}];
+}

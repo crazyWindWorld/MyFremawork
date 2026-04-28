@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package commonPB;
+option go_package = "p3server/proto/commonPB";
+
+// 任务状态
+enum TaskStatus {
+  NotStarted = 0; // 未开启
+  Completed = 1; // 已完成 未领取奖励
+  Processing = 2; // 正在进行
+  Finished = 3; // 已结束
+}
+
+// 奖励状态
+enum RewardStatus {
+  RewardLocked = 0; // 锁定
+  RewardUnlocked = 1; // 可领取
+  RewardReceived = 2; // 已领取
+}
+
+
+message TaskCond {
+  int32 cond = 1; // 任务条件 见表 __enums__.xlsx task_cond
+  int64 target = 2; // 目标id 0为无目标
+  int64 num = 3; // 完成次数
+  bool is_replace = 4;
+}
+
+message Task {
+  int64 task_id = 1;
+  int64 progress = 2;
+  TaskStatus status = 3;
+}
+
+//// 周期性任务
+//message PeriodTask {
+//  repeated Task tasks = 1; // 任务列表
+//  int64 active_point = 2; // 活跃度
+//  repeated commonPB.RewardStatus active_rewards = 3; // 活跃度奖励
+//  int64 next_refresh = 4; // 下次刷新时间
+//}
+
+// 活跃度奖励
+message ActiveRewards {
+  int64 active_point = 1; // 活跃度
+  repeated commonPB.RewardStatus active_rewards = 2; // 活跃度奖励
+  int64 next_refresh = 3; // 下次刷新时间
+}

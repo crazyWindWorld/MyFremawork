@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using NetFramework.RedDot.RunTime;
+using Fuel.RedDot.RunTime;
 using UnityEditor;
 using UnityEngine;
 
-namespace NetFramework.RedDot.Editor
+namespace Fuel.RedDot.Editor
 {
     public class RedDotConfigEditor : EditorWindow
     {

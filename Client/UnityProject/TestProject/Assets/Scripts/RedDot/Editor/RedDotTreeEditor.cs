@@ -3,9 +3,8 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using NetFramework.RedDot.RunTime;
-
-namespace NetFramework.RedDot.Editor
+using Fuel.RedDot.RunTime;
+namespace Fuel.RedDot.Editor
 {
     public class RedDotTreeEditor : EditorWindow
     {

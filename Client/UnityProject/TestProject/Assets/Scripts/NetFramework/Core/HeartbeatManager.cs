@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace NetFramework.Core
+namespace Fuel.NetFramework.Core
 {
     /// <summary>
     /// 心跳管理器

@@ -1,12 +1,12 @@
 using System;
 using Google.Protobuf;
-using NetFramework.Codec;
-using NetFramework.Dispatcher;
-using NetFramework.Protocol;
-using Singleton;
+using Fuel.NetFramework.Codec;
+using Fuel.NetFramework.Dispatcher;
+using Fuel.NetFramework.Protocol;
+using Fuel.Singleton;
 using UnityEngine;
 
-namespace NetFramework.Core
+namespace Fuel.NetFramework.Core
 {
     /// <summary>
     /// 网络管理器 (MonoBehaviour 单例)

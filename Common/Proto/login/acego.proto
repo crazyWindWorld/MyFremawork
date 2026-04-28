@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package loginPB;
+option go_package = "p3server/proto/loginPB";
+
+import "error.proto";
+
+
+enum AcegoLoginErrorCode{
+  ErrACEGOLoginRegister_9005 = 0[(basepb.error_info) = {tip_desc:"账号不存在"}];
+  ErrACEGOLoginRegister_9006 = 1[(basepb.error_info) = {tip_desc:"账号或密码不正确"}];
+  ErrACEGOLoginRegister_9010 = 2[(basepb.error_info) = {tip_desc:"验证码错误"}];
+  ErrACEGOLoginRegister_9012 = 3[(basepb.error_info) = {tip_desc:"账户被冻结"}];
+  ErrACEGOLoginRegister_9013 = 4[(basepb.error_info) = {tip_desc:"账户未激活"}];
+  ErrACEGOLoginRegister_9100 = 5[(basepb.error_info) = {tip_desc:"邮箱不能为空"}];
+  ErrACEGOLoginRegister_9101 = 6[(basepb.error_info) = {tip_desc:"密码不能为空"}];
+  ErrACEGOLoginRegister_9102 = 7[(basepb.error_info) = {tip_desc:"验证码不能为空"}];
+  ErrACEGOLoginRegister_9103 = 8[(basepb.error_info) = {tip_desc:"密码格式不正确"}];
+  ErrACEGOLoginRegister_9104 = 9[(basepb.error_info) = {tip_desc:"密码过于简单"}];
+  ErrACEGOLoginRegister_9105 = 10[(basepb.error_info) = {tip_desc:"邮箱格式不正确"}];
+  ErrACEGOLoginRegister_9106 = 11[(basepb.error_info) = {tip_desc:"验证码已过期"}];
+  ErrACEGOLoginRegister_9107 = 12[(basepb.error_info) = {tip_desc:"验证码输入错误"}];
+  ErrACEGOLoginRegister_9108 = 13[(basepb.error_info) = {tip_desc:"邮箱已被使用"}];
+
+  ErrACEGOTransTombarthiteFailed = 100  [(basepb.error_info) = {tip_desc:"转换稀土到ACEGO失败"}];
+  ErrACEGOTransNFTFailed = 101  [(basepb.error_info) = {tip_desc:"转换资产到ACEGO失败"}];
+  ErrACEGOHadBind = 102  [(basepb.error_info) = {tip_desc:"已绑定ACEGO平台"}];
+  ErrACEGONotBind = 103  [(basepb.error_info) = {tip_desc:"未绑定ACEGO平台"}];
+  ErrACEGOTombarthiteAmountInvalid = 104  [(basepb.error_info) = {tip_desc:"无效的稀土数量"}];
+  ErrACEGOUidHadBind = 105[(basepb.error_info) = {tip_desc:"当前acego uid 已经被其他用户绑定"}];
+  ErrACEGOInvalidNFTToken = 106[(basepb.error_info) = {tip_desc:"无效的资产Token"}];
+}
+
+
+// 注册
+message AcegoRegisterReq{
+  string email = 1;
+  string pwd = 2;
+  string valid_code = 3;// 验证码
+  string client_id = 4;
+}
+
+message AcegoRegisterRsp{
+  string login_uid = 1; // 注册成功直接返回登录码
+  string acego_uid = 2;
+}
+
+// 登录
+message AcegoLoginReq{
+  string email = 1;
+  string pwd = 2;
+  string client_id = 3;
+}
+
+message AcegoLoginRsp{
+  string login_uid = 1; // 登录成功直接返回登录码
+  string acego_uid = 2;
+}
+
+enum SendValidCodeType{
+  VC_Register = 0; // 注册
+  VC_ForgetPwd = 1; // 重置密码
+}
+
+// 发送邮箱验证码
+message AcegoSendValidReq{
+  string email = 1;
+  SendValidCodeType typ = 2;
+  string client_id = 3;
+}
+
+message AcegoSendValidRsp{
+  int64 seconds = 1; // 多少秒后才能再次发送
+  int64 expired_at = 2; // 验证码有效期
+}
+
+// 检查邮箱是否已注册
+message AcegoCheckEmailReq{
+  string email = 1;
+}
+
+message AcegoCheckEmailRsp{
+  bool exists = 1; // true 邮箱已存在，走登录,false 邮箱不存在，走注册
+}
+
+// 重置密码
+message AcegoResetPwdReq{
+  string email = 1;
+  string pwd = 2;
+  string valid_code = 3; // 验证码
+  string client_id = 4;
+}
+
+message AcegoResetPwdRsp{
+  bool result = 1; // true 重置成功， false 重置失败
+}
+
+message AcegoLoginInvalidationPush{
+
+}
+
+message AcegoInfo {
+  int64 role_id = 1;
+  int64 bind_time = 2;
+}
+
+message GetAcegoInfoOnlyServerReq {
+  string acego_uid = 1;
+}
+message GetAcegoInfoOnlyServerRsp {
+  AcegoInfo acego_info = 1;
+}
+
+message GetAcegoUidOnlyServerReq {
+  int64 role_id = 1;
+}
+message GetAcegoUidOnlyServerRsp {
+  string acego_uid = 1;
+}

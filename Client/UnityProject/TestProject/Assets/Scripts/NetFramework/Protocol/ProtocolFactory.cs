@@ -1,4 +1,4 @@
-namespace NetFramework.Protocol
+namespace Fuel.NetFramework.Protocol
 {
     /// <summary>
     /// 协议工厂，根据协议类型创建对应的 IProtocol 实例

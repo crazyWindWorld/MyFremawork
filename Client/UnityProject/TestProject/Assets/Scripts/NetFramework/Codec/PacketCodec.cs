@@ -1,7 +1,7 @@
 using System;
-using NetFramework.Core;
+using Fuel.NetFramework.Core;
 
-namespace NetFramework.Codec
+namespace Fuel.NetFramework.Codec
 {
     /// <summary>
     /// 数据包编解码器

@@ -1,11 +1,11 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using NetFramework.Codec;
-using NetFramework.Core;
+using Fuel.NetFramework.Codec;
+using Fuel.NetFramework.Core;
 using UnityEngine;
 
-namespace NetFramework.Protocol
+namespace Fuel.NetFramework.Protocol
 {
     /// <summary>
     /// TCP 协议实现

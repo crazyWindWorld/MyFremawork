@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package loginPB;
+option go_package = "p3server/proto/loginPB";
+
+import "error.proto";
+import "common/command.proto";
+
+enum LoginErrorCode {
+  ErrUsernameIsEmpty = 0  [(basepb.error_info) = {tip_desc:"用户名不能为空"}];
+  ErrUserPwdError = 1  [(basepb.error_info) = {tip_desc:"用户名或密码错误"}];
+  ErrUserLimitLogin = 2 [(basepb.error_info) = {tip_desc:"登录被限制，暂时不能登录"}];
+  ErrUserNotFound = 3 [(basepb.error_info) = {tip_desc:"用户不存在"}];
+  ErrUserVisitorLoginExpired = 4 [(basepb.error_info) = {tip_desc:"游客登录过期"}];
+  ErrUserAcegoLoginExpired = 5[(basepb.error_info) = {tip_desc:"AceGo登录过期"}];
+  ErrNicknameInvalid = 6[(basepb.error_info) = {tip_desc:"无效的昵称"}];
+  ErrNicknameUsed = 7[(basepb.error_info) = {tip_desc:"昵称已被使用"}];
+  ErrIsVisitor = 8[(basepb.error_info) = {tip_desc:"游客不能操作"}];
+}
+
+enum WhiteListOpt{
+  WLOGet = 0;
+  WLOAdd = 1;
+  WLODel = 2;
+  WLOStatus = 3;
+}
+
+message WhiteListOptReq{
+  WhiteListOpt opt = 1;
+  string ip = 2;
+  bool is_open = 3;
+}
+
+message WhiteListOptRsp{
+  bool is_open = 1;
+  repeated string ips = 2;
+}
+
+
+message CloseServerPush{
+  int64 close_at = 1;
+}
+
+enum LoginType{
+  LoginTypeAccount = 0;
+  LoginTypeVisitor = 1;
+  LoginTypeAcego = 2;
+}
+
+message LoginReq{
+  string account = 1;
+  string pwd = 2;
+  string login_code = 3;
+  LoginType type = 4;
+  string DeviceInfo = 5;
+  commonPB.ClientType client_type = 6;
+  string ip = 7;
+  string client_id = 8;
+  int64 login_id = 9;
+  string client_version = 10; // 客户端版本
+  bool is_reconnect = 11; // 是否是重连
+  string channel = 12; // 渠道
+}
+
+enum LoginResult{
+  LoginSuccess = 0;
+  LoginLimit = 1;
+  LoginFailed = 2;
+  LoginExpired = 3;
+}
+
+enum Where{
+  Home = 0;
+  MainCity = 1;
+}
+
+message LoginRsp{
+  LoginResult result = 1;
+  int64 role_id = 2;
+  LoginType type = 3;
+  string login_code = 4;
+  string acego_id = 5;
+  int64 limit_time = 6; // 被封到什么时候
+  string acego_website = 7;
+  string chat_http = 8; // 聊天逻辑服地址
+  string chat_ws = 9; // 聊天推送服地址
+}
+
+message LogoutPush {
+  int64 login_id = 1;
+  string ip = 2;
+}
+
+
+message IsVisitorReq{
+
+}
+
+message IsVisitorRsp{
+  bool is_visitor = 1;
+}
+
+
+message CheatSetFormalReq{
+
+}
+
+message CheatSetFormalRsp{
+  string acego_id = 1;
+}
+
+message GetAnnouncementReq{}
+
+message GetAnnouncementRsp{
+  string pic_url = 1;
+  string content = 2;
+}

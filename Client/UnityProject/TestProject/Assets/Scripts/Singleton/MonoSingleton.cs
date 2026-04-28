@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Singleton
+namespace Fuel.Singleton
 {
     /// <summary>
     /// MonoBehaviour 单例基类

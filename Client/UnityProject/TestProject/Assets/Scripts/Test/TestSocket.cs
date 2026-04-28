@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using LoginPB;
-using NetFramework.Attributes;
-using NetFramework.Core;
+using Fuel.NetFramework.Attributes;
+using Fuel.NetFramework.Core;
 using UnityEngine;
 using UnityEngine.UI;
 

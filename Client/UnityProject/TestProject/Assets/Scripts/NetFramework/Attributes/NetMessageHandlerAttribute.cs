@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace NetFramework.Attributes
+namespace Fuel.NetFramework.Attributes
 {
     /// <summary>
     /// 通过消息类型名从 ProtoCmds 中查找对应的命令号

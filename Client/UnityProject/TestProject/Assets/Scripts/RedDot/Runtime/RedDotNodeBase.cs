@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetFramework.RedDot.RunTime
+namespace Fuel.RedDot.RunTime
 {
     public class RedDotNodeBase
     {

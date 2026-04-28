@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package loginPB;
+option go_package = "p3server/proto/loginPB";
+
+message AdminRoleInfo {
+  int64 role_id = 1;
+  int64 level = 2;
+  string acego_id = 3;
+  string nickname = 4;
+  int64 register_time = 5; // 注册时间
+  int64 login_time = 6; // 最后登录时间
+  int64 server_id = 7; // 所属服务器
+  int64 limit_time = 8; // 被封到什么时候 用于判断玩家是否被封禁
+}
+
+// 后台获取角色信息
+message AdminGetRoleInfoReq {
+  int64 role_id = 1;
+}
+message AdminGetRoleInfoRsp {
+  AdminRoleInfo role_info = 1;
+}
