@@ -1,4 +1,5 @@
-﻿using Fuel.Singleton;
+﻿using System.Collections.Generic;
+using Fuel.Singleton;
 
 namespace Fuel.Manager.AudioManager
 {
@@ -58,6 +59,28 @@ namespace Fuel.Manager.AudioManager
             /// 声音最大距离
             /// </summary>
             public float MaxDistance = 30f;
+
+            private static readonly Stack<SoundParams> s_pool = new Stack<SoundParams>();
+
+            public static SoundParams Get()
+            {
+                return s_pool.Count > 0 ? s_pool.Pop() : new SoundParams();
+            }
+
+            public void Reset()
+            {
+                Type = AudioType.SE;
+                IsLoop = false;
+                SpatialBlend = 0f;
+                MinDistance = 5f;
+                MaxDistance = 30f;
+            }
+
+            public void Release()
+            {
+                Reset();
+                s_pool.Push(this);
+            }
         }
 
         public sealed class AudioClipData
@@ -67,7 +90,24 @@ namespace Fuel.Manager.AudioManager
             /// </summary>
             public string Path { get; set; }
 
-            public SoundParams PlayParams { get; set; } = new();
+            public SoundParams PlayParams { get; set; }
+
+            private static readonly Stack<AudioClipData> s_pool = new Stack<AudioClipData>();
+
+            public static AudioClipData Get()
+            {
+                var data = s_pool.Count > 0 ? s_pool.Pop() : new AudioClipData();
+                data.PlayParams = SoundParams.Get();
+                return data;
+            }
+
+            public void Release()
+            {
+                Path = null;
+                PlayParams?.Release();
+                PlayParams = null;
+                s_pool.Push(this);
+            }
         }
     }
 }

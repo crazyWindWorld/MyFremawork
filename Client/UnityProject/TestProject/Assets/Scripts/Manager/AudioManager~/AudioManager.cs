@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using UnityEngine;
 using Fuel.Singleton;
+using UnityEngine;
 
-namespace Fuel.Manager.AudioManager
+namespace Fuel.Manager.Audio
 {
     public sealed partial class AudioManager : Singleton<AudioManager>
     {
@@ -13,6 +12,7 @@ namespace Fuel.Manager.AudioManager
         /// 所有缓存的clip
         /// </summary>
         private readonly Dictionary<string, AudioClip> _allClips = new Dictionary<string, AudioClip>();
+        private int _maxCacheSize = 100; // 默认最大缓存100个音频
 #if UNITY_EDITOR
         public Dictionary<string, AudioClip> AllClips => _allClips;
 #endif
@@ -41,16 +41,14 @@ namespace Fuel.Manager.AudioManager
         private GameObject _bgsRoot;
         private GameObject _soundSoundEffectRoot;
         private static int _autoID = 0;
-        public static int AutoID => _autoID;
-        private static int NextAutoID()
+        public static int AutoID
         {
-            var id = Interlocked.Increment(ref _autoID);
-            if (id == int.MaxValue)
+            get => _autoID;
+            private set
             {
-                Interlocked.CompareExchange(ref _autoID, 0, int.MaxValue);
-                return 0;
+                _autoID = Mathf.Clamp(value, 0, int.MaxValue);
+                _autoID = _autoID == int.MaxValue ? 0 : _autoID;
             }
-            return id;
         }
         #region 音量控制
 
@@ -59,14 +57,18 @@ namespace Fuel.Manager.AudioManager
         /// </summary>
         private float _soundVolume = 1;
         public float SoundVolume=> _soundVolume;
-
-        /// <summary>
-        /// 环境音效音量
-        /// </summary>
-        private float _bgsVolume = 1;
-        public float BgsVolume => _bgsVolume;
-
         private float _tmpMusicVolume;
+
+        // 音频分组音量控制
+        private readonly Dictionary<string, float> _audioGroupVolumes = new Dictionary<string, float>();
+        private readonly Dictionary<AudioType, float> _audioTypeVolumes = new Dictionary<AudioType, float>
+        {
+            { AudioType.BGM, 1f },
+            { AudioType.BGS, 1f },
+            { AudioType.ME, 1f },
+            { AudioType.SE, 1f }
+        };
+
         /// <summary>
         /// 音乐音量
         /// </summary>
@@ -87,7 +89,7 @@ namespace Fuel.Manager.AudioManager
             set
             {
                 m_musicMute = value;
-                Mute(AudioType.BGM, m_musicMute);
+                Mute( AudioType.BGM, m_musicMute);
             }
         }
 
@@ -147,8 +149,8 @@ namespace Fuel.Manager.AudioManager
             GameObject.Destroy(_bgmRoot);
             GameObject.Destroy(_bgsRoot);
             GameObject.Destroy(_soundSoundEffectRoot);
-            _bgm.Dispose();
-            _bgsGoAudioSource.Dispose();
+            _bgm?.Dispose();
+            _bgsGoAudioSource?.Dispose();
 
             foreach (var source in _goSources)
             {
@@ -170,7 +172,7 @@ namespace Fuel.Manager.AudioManager
             if (clipName.StartsWith(AudioPath))
             {
                 Debug.LogWarning($"路径错误，请修改对应配置：{clipName}为：{clipName.Replace(AudioPath, "")}");
-                clipName = clipName.Replace(AudioPath, "");
+                clipName = clipName.Replace(AudioPath, ""); 
             }
             if (_allClips.TryGetValue(clipName, out AudioClip audioClipExist))
             {
@@ -182,6 +184,7 @@ namespace Fuel.Manager.AudioManager
                 if (clip == null)
                 {
                     Debug.LogError($"路径错误，{clipName} 没找到对应的sound");
+                    cb?.Invoke(null);
                 }
                 cb?.Invoke(clip);
             }
@@ -203,6 +206,94 @@ namespace Fuel.Manager.AudioManager
         }
 
         /// <summary>
+        /// 预加载音频资源
+        /// </summary>
+        /// <param name="clipNames">音频资源名称列表</param>
+        public void PreloadClips(string[] clipNames)
+        {
+            foreach (var clipName in clipNames)
+            {
+                if (!_allClips.ContainsKey(clipName))
+                {
+                    GetAudioClip(clipName);
+                }
+            }
+            CheckCacheSize();
+        }
+
+        /// <summary>
+        /// 预加载单个音频资源
+        /// </summary>
+        /// <param name="clipName">音频资源名称</param>
+        public void PreloadClip(string clipName)
+        {
+            if (!_allClips.ContainsKey(clipName))
+            {
+                GetAudioClip(clipName);
+            }
+            CheckCacheSize();
+        }
+
+        /// <summary>
+        /// 卸载指定音频资源
+        /// </summary>
+        /// <param name="clipName">音频资源名称</param>
+        public void UnloadClip(string clipName)
+        {
+            if (_allClips.TryGetValue(clipName, out AudioClip clip))
+            {
+                GameObject.Destroy(clip);
+                _allClips.Remove(clipName);
+            }
+        }
+
+        /// <summary>
+        /// 卸载所有音频资源（保留当前BGM）
+        /// </summary>
+        public void UnloadAllClips()
+        {
+            ClearClip();
+        }
+
+        /// <summary>
+        /// 设置最大缓存数量
+        /// </summary>
+        /// <param name="maxSize">最大缓存数量</param>
+        public void SetMaxCacheSize(int maxSize)
+        {
+            _maxCacheSize = maxSize > 0 ? maxSize : 100;
+            CheckCacheSize();
+        }
+
+        /// <summary>
+        /// 检查缓存大小并清理超出的部分
+        /// </summary>
+        private void CheckCacheSize()
+        {
+            if (_allClips.Count <= _maxCacheSize) return;
+
+            int removeCount = _allClips.Count - _maxCacheSize;
+            List<string> toRemove = new List<string>();
+            foreach (var clip in _allClips)
+            {
+                if (clip.Key != _bgmPath)
+                {
+                    toRemove.Add(clip.Key);
+                    removeCount--;
+                    if (removeCount <= 0) break;
+                }
+            }
+            foreach (var key in toRemove)
+            {
+                if (_allClips.TryGetValue(key, out AudioClip clip))
+                {
+                    GameObject.Destroy(clip);
+                    _allClips.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>
         /// 获取音效 AsData
         /// </summary>
         /// <param name="go"></param>
@@ -210,12 +301,22 @@ namespace Fuel.Manager.AudioManager
         private AudioSourceData GetSoundSourceData(GameObject go)
         {
             var instID = go.GetInstanceID();
-            _goSources.TryGetValue(instID, out var goAudio);
-            if (goAudio == null)
+            if (_goSources.TryGetValue(instID, out var goAudio))
             {
-                goAudio = new GoAudioSource(go);
-                _goSources.Add(instID, goAudio);
+                // 检查 GameObject 是否已被销毁
+                if (goAudio != null && goAudio.Root != null)
+                {
+                    return goAudio.GetAudioSourceData();
+                }
+                else
+                {
+                    // 如果 GameObject 已销毁，移除条目
+                    _goSources.Remove(instID);
+                }
             }
+
+            goAudio = new GoAudioSource(go);
+            _goSources.Add(instID, goAudio);
             return goAudio.GetAudioSourceData();
         }
         
@@ -330,6 +431,12 @@ namespace Fuel.Manager.AudioManager
         /// <param name="fadeTime">淡入淡出时间</param>
         private void SetVolume(AudioType type, float volume, float fadeTime)
         {
+            // 应用音频类型分组音量
+            if (_audioTypeVolumes.TryGetValue(type, out float typeVolume))
+            {
+                volume *= typeVolume;
+            }
+
             switch (type)
             {
                 case AudioType.BGM:
@@ -342,27 +449,29 @@ namespace Fuel.Manager.AudioManager
                 case AudioType.SE:
                     foreach (var goSource in _goSources)
                     {
-                        goSource.Value.SetVolume(volume,fadeTime);
+                        goSource.Value.SetVolume(volume, fadeTime);
                     }
                     break;
             }
         }
 
-        private readonly List<string> _tmpClipKeys = new List<string>();
         private void ClearClip()
         {
-            _tmpClipKeys.Clear();
+            List<string> clipPathsList = new List<string>();
             foreach (var clipPath in _allClips)
             {
                 if (clipPath.Key != _bgmPath)
                 {
-                    _tmpClipKeys.Add(clipPath.Key);
+                    clipPathsList.Add(clipPath.Key);
                 }
             }
-            foreach (var clipPath in _tmpClipKeys)
+            foreach (var clipPath in clipPathsList)
             {
-                GameObject.Destroy(_allClips[clipPath]);
-                _allClips.Remove(clipPath);
+                if (_allClips.TryGetValue(clipPath, out AudioClip clip))
+                {
+                    GameObject.Destroy(clip);
+                    _allClips.Remove(clipPath);
+                }
             }
         }
         #region 音频控制公共管理接口
@@ -469,13 +578,13 @@ namespace Fuel.Manager.AudioManager
         }
 
         /// <summary>
-        /// 设置BGS音量
+        /// 设置BGM音量
         /// </summary>
         /// <param name="volume">音量</param>
         /// <param name="fadeSeconds">淡入时长</param>
         public void SetBGSVolume(float volume, float fadeSeconds = 0)
         {
-            _bgsVolume = Mathf.Clamp01(volume);
+            _musicVolume = Mathf.Clamp01(volume);
             SetVolume(AudioType.BGS, volume, fadeSeconds);
         }
 
@@ -485,7 +594,6 @@ namespace Fuel.Manager.AudioManager
         public void SetBGMAndBGSVolume(float volume, float fadeSeconds = 0)
         {
             _musicVolume = Mathf.Clamp01(volume);
-            _bgsVolume = Mathf.Clamp01(volume);
             SetVolume(AudioType.BGM, volume, fadeSeconds);
             SetVolume(AudioType.BGS, volume, fadeSeconds);
         }
@@ -575,7 +683,6 @@ namespace Fuel.Manager.AudioManager
         public void SetAllVolume(float volume, float fadeSeconds = 0)
         {
             _musicVolume = Mathf.Clamp01(volume);
-            _bgsVolume = Mathf.Clamp01(volume);
             _soundVolume = Mathf.Clamp01(volume);
             SetVolume(AudioType.BGM, volume, fadeSeconds);
             SetVolume(AudioType.BGS, volume, fadeSeconds);
@@ -599,6 +706,70 @@ namespace Fuel.Manager.AudioManager
                 }
             }
         }
+
+        /// <summary>
+        /// 设置音频分组音量
+        /// </summary>
+        /// <param name="groupName">分组名称</param>
+        /// <param name="volume">音量大小</param>
+        public void SetAudioGroupVolume(string groupName, float volume)
+        {
+            _audioGroupVolumes[groupName] = Mathf.Clamp01(volume);
+        }
+
+        /// <summary>
+        /// 获取音频分组音量
+        /// </summary>
+        /// <param name="groupName">分组名称</param>
+        /// <returns>音量大小</returns>
+        public float GetAudioGroupVolume(string groupName)
+        {
+            return _audioGroupVolumes.TryGetValue(groupName, out float volume) ? volume : 1f;
+        }
+
+        /// <summary>
+        /// 设置音频类型音量
+        /// </summary>
+        /// <param name="type">音频类型</param>
+        /// <param name="volume">音量大小</param>
+        public void SetAudioTypeVolume(AudioType type, float volume)
+        {
+            _audioTypeVolumes[type] = Mathf.Clamp01(volume);
+        }
+
+        /// <summary>
+        /// 获取音频类型音量
+        /// </summary>
+        /// <param name="type">音频类型</param>
+        /// <returns>音量大小</returns>
+        public float GetAudioTypeVolume(AudioType type)
+        {
+            return _audioTypeVolumes.TryGetValue(type, out float volume) ? volume : 1f;
+        }
+
+        /// <summary>
+        /// 设置自定义音量（同时应用分组和类型音量）
+        /// </summary>
+        /// <param name="volume">原始音量大小</param>
+        /// <param name="type">音频类型</param>
+        /// <param name="groupName">分组名称（可选）</param>
+        /// <returns>最终音量大小</returns>
+        public float GetFinalVolume(float volume, AudioType type, string groupName = null)
+        {
+            // 应用音频类型音量
+            if (_audioTypeVolumes.TryGetValue(type, out float typeVolume))
+            {
+                volume *= typeVolume;
+            }
+
+            // 应用分组音量
+            if (!string.IsNullOrEmpty(groupName) && _audioGroupVolumes.TryGetValue(groupName, out float groupVolume))
+            {
+                volume *= groupVolume;
+            }
+
+            return volume;
+        }
         #endregion
         
         /// <summary>
@@ -614,10 +785,15 @@ namespace Fuel.Manager.AudioManager
             {
                 return;
             }
-            var sound = AudioClipData.Get();
-            sound.Path = path;
-            sound.PlayParams.Type = AudioType.BGM;
-            sound.PlayParams.IsLoop = true;
+            AudioClipData sound = new AudioClipData
+            {
+                Path = path,
+                PlayParams =
+                {
+                    Type = AudioType.BGM,
+                    IsLoop = true
+                }
+            };
             if (sound.PlayParams.Type == AudioType.BGM)
             {
                 StopBGM(fadeSeconds, () =>
@@ -627,14 +803,12 @@ namespace Fuel.Manager.AudioManager
                     {
                         _bgmPath = path;
                         _bgm.Play(clip, _musicVolume, sound.PlayParams, fadeSeconds, onComplete);
-                        sound.Release();
                     });
                 });
             }
             else
             {
                 Debug.LogError($"AudioCategory == {sound.PlayParams.Type}. PlayBGM Type isn't BGM");
-                sound.Release();
             }
         }
 
@@ -648,10 +822,15 @@ namespace Fuel.Manager.AudioManager
         {
             if (onlyOne)
                 StopBgs(fadeSeconds);
-            var audioClipData = AudioClipData.Get();
-            audioClipData.Path = path;
-            audioClipData.PlayParams.Type = AudioType.BGS;
-            audioClipData.PlayParams.IsLoop = true;
+            AudioClipData audioClipData = new AudioClipData
+            {
+                Path = path,
+                PlayParams =
+                {
+                    Type = AudioType.BGS,
+                    IsLoop = true
+                }
+            };
             int instanceId = -1;
             GetClip(path, (clip) =>
             {
@@ -662,8 +841,7 @@ namespace Fuel.Manager.AudioManager
 
                 var sourceData = _bgsGoAudioSource.GetAudioSourceData();
                 instanceId = sourceData.InstanceID;
-                sourceData.Play(clip,_bgsVolume,audioClipData.PlayParams,fadeSeconds);
-                audioClipData.Release();
+                sourceData.Play(clip,_soundVolume,audioClipData.PlayParams,fadeSeconds);
             });
             return instanceId;
         }
@@ -678,27 +856,27 @@ namespace Fuel.Manager.AudioManager
         private int PlaySound(AudioClipData soundParams, float fadeSeconds = 0, Action onComplete = null)
         {
             var audioClip = soundParams;
-            AudioSourceData source = null;
-            if (audioClip.PlayParams.Type != AudioType.ME&& audioClip.PlayParams.Type != AudioType.SE)
+            if (audioClip.PlayParams.Type != AudioType.ME && audioClip.PlayParams.Type != AudioType.SE)
             {
                 Debug.LogError($"AudioType == {audioClip.PlayParams.Type}. PlaySound Type isn't ME or SE");
                 return -1;
             }
+
+            int instanceId = -1;
             GetClip(audioClip.Path, (clip) =>
             {
-                if (clip==null)
+                if (clip == null)
                 {
                     Debug.LogError($"{audioClip.Path}没有该资源");
+                    onComplete?.Invoke();
                     return;
                 }
-                source = GetSoundSourceData(_soundSoundEffectRoot);
+                var source = GetSoundSourceData(_soundSoundEffectRoot);
+                instanceId = source.InstanceID;
                 source.Play(clip, _soundVolume, audioClip.PlayParams, fadeSeconds, onComplete);
             });
-            if (source == null)
-            {
-                return -1;
-            }
-            return source.InstanceID;
+
+            return instanceId;
         }
 
         /// <summary>
@@ -711,13 +889,16 @@ namespace Fuel.Manager.AudioManager
         /// <returns></returns>
         public int PlaySound(string path, float fadeSeconds = 0, Action onComplete = null,bool isLoop = false)
         {
-            var audioClipData = AudioClipData.Get();
-            audioClipData.Path = path;
-            audioClipData.PlayParams.Type = AudioType.SE;
-            audioClipData.PlayParams.IsLoop = isLoop;
-            var result = PlaySound(audioClipData, fadeSeconds,onComplete);
-            audioClipData.Release();
-            return result;
+            AudioClipData audioClipData = new AudioClipData
+            {
+                Path = path,
+                PlayParams =
+                {
+                    Type = AudioType.SE,
+                    IsLoop = isLoop
+                }
+            };
+            return PlaySound(audioClipData, fadeSeconds,onComplete); 
         }
 
     
@@ -728,15 +909,16 @@ namespace Fuel.Manager.AudioManager
             {
                 return -1;
             }
-            var soundParams = SoundParams.Get();
-            soundParams.Type = AudioType.SE;
-            soundParams.IsLoop = false;
+            SoundParams soundParams = new SoundParams
+            {
+                Type = AudioType.SE,
+                IsLoop = false
+            };
             AudioSourceData source = null;
             source = GetSoundSourceData(audioSource.gameObject);
             GetClip(clipName, (clip) =>
             {
                 source.Play(clip, _soundVolume, soundParams, fadeTime, onComplete);
-                soundParams.Release();
             });
             return source.InstanceID;
         }
@@ -844,7 +1026,11 @@ namespace Fuel.Manager.AudioManager
             int instanceId = go.GetInstanceID();
             if (_goSources.TryGetValue(instanceId, out var audioSourceData))
             {
-                audioSourceData.Dispose();
+                // 检查 GameObject 是否已被销毁
+                if (audioSourceData != null && audioSourceData.Root != null)
+                {
+                    audioSourceData.Dispose();
+                }
                 _goSources.Remove(instanceId);
             }
         }
@@ -873,25 +1059,32 @@ namespace Fuel.Manager.AudioManager
         }
         #endregion
 
-        private readonly List<int> _tmpDeadKeys = new List<int>();
         public void Update(float dt)
         {
             _bgm?.Update(dt);
             _bgsGoAudioSource?.Update(dt);
-            _tmpDeadKeys.Clear();
+
+            // 清理已销毁的 GameObject 条目
+            List<int> toRemove = null;
             foreach (var goSource in _goSources)
             {
-                if (!goSource.Value.IsRootAlive)
+                if (goSource.Value == null || goSource.Value.As == null || goSource.Value.As.gameObject == null)
                 {
-                    _tmpDeadKeys.Add(goSource.Key);
-                    continue;
+                    toRemove ??= new List<int>();
+                    toRemove.Add(goSource.Key);
                 }
-                goSource.Value.Update(dt);
+                else
+                {
+                    goSource.Value.Update(dt);
+                }
             }
-            foreach (var key in _tmpDeadKeys)
+
+            if (toRemove != null)
             {
-                _goSources[key].Dispose();
-                _goSources.Remove(key);
+                foreach (var key in toRemove)
+                {
+                    _goSources.Remove(key);
+                }
             }
         }
     }

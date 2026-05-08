@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Fuel.Manager.AudioManager
+namespace Fuel.Manager.Audio
 {
     public sealed partial class AudioManager
     {
@@ -15,7 +15,7 @@ namespace Fuel.Manager.AudioManager
             public List<AudioSourceData> CurrentSource => m_currentSource;
 #endif
             private readonly GameObject m_root;
-            public bool IsRootAlive => m_root != null;
+            public GameObject Root => m_root;
             public GoAudioSource(GameObject go)
             {
                 m_root = go;
@@ -25,18 +25,13 @@ namespace Fuel.Manager.AudioManager
             }
             public void Update(float dt)
             {
-                for (var i = m_currentSource.Count - 1; i >= 0; i--)
+                for (var i = 0; i < m_currentSource.Count; i++)
                 {
                     if (m_currentSource[i].IsDirty)//回收标记
                     {
                         m_pool.Push(m_currentSource[i]);
-                        // swap-and-pop: 把最后一个元素移到当前位置，然后移除末尾，O(1)
-                        var lastIndex = m_currentSource.Count - 1;
-                        if (i != lastIndex)
-                        {
-                            m_currentSource[i] = m_currentSource[lastIndex];
-                        }
-                        m_currentSource.RemoveAt(lastIndex);
+                        m_currentSource.RemoveAt(i);
+                        i--;
                     }
                     else
                     {
@@ -57,7 +52,7 @@ namespace Fuel.Manager.AudioManager
                 }
                 else
                 {
-                    result = new AudioSourceData(m_root.AddComponent<AudioSource>(), NextAutoID());
+                    result = new AudioSourceData(m_root.AddComponent<AudioSource>(), ++AutoID);
                 }
                 m_currentSource.Add(result);
                 return result;
