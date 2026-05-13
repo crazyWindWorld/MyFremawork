@@ -306,6 +306,28 @@ namespace Fuel.RedDot.RunTime
             }
         }
 
+                /// <summary>
+        /// 重置红点节点数据（清除红点状态，不删除节点结构）
+        /// </summary>
+        /// <param name="redDotId"></param>
+        /// <param name="args"></param>
+        public void ResetRedDotNode(int redDotId, params object[] args)
+        {
+            if (RedDotConfigAsset.Instance.DataDic.TryGetValue(redDotId, out var redDotData))
+            {
+                var redPath = args.Length > 0 ? string.Format(redDotData.Path, args) : redDotData.Path;
+                RedDotNodeBase redDotNode = GetRedDotNode(redPath);
+                if (redDotNode == null)
+                {
+                    Debug.LogWarning($"重置红点数据节点失败，路径：{redPath}");
+                }
+                else
+                {
+                    redDotNode.ClearStatus();
+                }
+            }
+        }
+
         /// <summary>
         /// 注销红点
         /// </summary>

@@ -13,7 +13,7 @@ namespace Fuel.RedDot.Editor
 {
     public class RedDotConfigEditorOdin : EditorWindow
     {
-        [MenuItem("Tools/RedDotTree/红点数据编辑器 (Odin) #Y")]
+        [MenuItem("Tools/红点数据编辑器 (Odin) #Y")]
         public static void ShowWindow()
         {
             GetWindow<RedDotConfigEditorOdin>("红点数据编辑器 (Odin)").minSize = new Vector2(1400, 800);
@@ -50,19 +50,21 @@ namespace Fuel.RedDot.Editor
                 return;
             }
 
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
             EditorGUILayout.Space(10);
 
             DrawHeader();
             EditorGUILayout.Space(10);
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+
             DrawView();
+            EditorGUILayout.EndScrollView();
+
             EditorGUILayout.Space(10);
             DrawSelectedItem();
             EditorGUILayout.Space(10);
             DrawOperations();
 
-            EditorGUILayout.EndScrollView();
         }
 
         private void DrawHeader()
@@ -415,7 +417,7 @@ namespace Fuel.RedDot.Editor
                 EditorGUILayout.Space(10);
                 EditorGUILayout.LabelField("绑定角色:");
                 _selectedItem.BindRole = EditorGUILayout.Toggle(_selectedItem.BindRole);
-            }            
+            }
             else
             {
                 if (_selectedItem.UseLocalSave)
@@ -446,7 +448,7 @@ namespace Fuel.RedDot.Editor
             }
 
             EditorGUILayout.EndVertical();
-             GUI.color = Color.white;
+            GUI.color = Color.white;
         }
 
         private void DrawOperations()
@@ -455,7 +457,7 @@ namespace Fuel.RedDot.Editor
             EditorGUILayout.LabelField("操作", EditorStyles.boldLabel);
             EditorGUILayout.Space(10);
 
-            EditorGUILayout.LabelField("新红点路径:");
+            EditorGUILayout.LabelField("新增红点路径:（全路径自动拆分）");
             _newPath = EditorGUILayout.TextField(_newPath);
 
             EditorGUILayout.Space(10);
@@ -486,7 +488,7 @@ namespace Fuel.RedDot.Editor
             {
                 foreach (var item in _configAsset.Data)
                 {
-                    if (item.Path.Contains(_search))
+                    if (item.Path.Contains(_search)||item.Id.ToString().Contains(_search))
                     {
                         _searchList.Add(item);
                     }
@@ -568,7 +570,7 @@ namespace Fuel.RedDot.Editor
             AutoGenEnum();
             EditorUtility.SetDirty(_configAsset);
             AssetDatabase.SaveAssets();
-            EditorUtility.DisplayDialog("成功", "代码生成成功！", "确定");
+            ShowNotification(new GUIContent("枚举生成成功！"));
         }
 
         private void SortData()

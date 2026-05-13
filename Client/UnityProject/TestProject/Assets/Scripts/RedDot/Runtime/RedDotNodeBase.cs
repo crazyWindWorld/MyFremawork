@@ -169,6 +169,21 @@ namespace Fuel.RedDot.RunTime
             m_children.Remove(nodeName);
         }
 
+        public void ClearStatus()
+        {
+            if (m_children != null)
+            {
+                foreach (var child in m_children)
+                {
+                    child.Value.ClearStatus();
+                }
+            }
+            else
+            {
+                ResetStatus();
+            }
+        }
+
         #region 查看红点相关逻辑
 
         /// <summary>
