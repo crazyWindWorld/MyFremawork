@@ -16,8 +16,20 @@ namespace Fuel.RedDot.Editor
         [MenuItem("Tools/红点数据编辑器 (Odin) #Y")]
         public static void ShowWindow()
         {
-            GetWindow<RedDotConfigEditorOdin>("红点数据编辑器 (Odin)").minSize = new Vector2(1400, 800);
+            GetWindow<RedDotConfigEditorOdin>("红点数据编辑器 (Odin)").minSize = new Vector2(1250, 800);
         }
+
+        private const float DetailPanelWidth = 340f;
+        private const float IdColumnWidth = 45f;
+        private const float PathColumnWidth = 360f;
+        private const float TypeColumnWidth = 55f;
+        private const float PeriodColumnWidth = 65f;
+        private const float ShowColumnWidth = 70f;
+        private const float AliasColumnWidth = 120f;
+        private const float SaveColumnWidth = 45f;
+        private const float OperationColumnWidth = 90f;
+        private const float TableContentWidth = IdColumnWidth + PathColumnWidth + TypeColumnWidth + PeriodColumnWidth + ShowColumnWidth + AliasColumnWidth + SaveColumnWidth;
+        private const float TableWidth = TableContentWidth + OperationColumnWidth + 25f;
 
         private RedDotConfigAsset _configAsset;
         private RedDotConfigAsset.RedDotConfigData _selectedItem;
@@ -50,33 +62,44 @@ namespace Fuel.RedDot.Editor
                 return;
             }
 
-
-            EditorGUILayout.Space(10);
-
             DrawHeader();
-            EditorGUILayout.Space(10);
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+            EditorGUILayout.Space(6);
 
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical(GUILayout.Width(TableWidth));
             DrawView();
-            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
 
-            EditorGUILayout.Space(10);
+            EditorGUILayout.BeginVertical(GUILayout.Width(DetailPanelWidth));
             DrawSelectedItem();
-            EditorGUILayout.Space(10);
+            EditorGUILayout.Space(6);
             DrawOperations();
-
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawHeader()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            EditorGUILayout.LabelField("视图模式:", GUILayout.Width(60));
+            EditorGUILayout.LabelField("红点配置", EditorStyles.boldLabel, GUILayout.Width(70));
+            EditorGUILayout.LabelField("视图:", GUILayout.Width(35));
             _viewMode = (ViewMode)EditorGUILayout.EnumPopup(_viewMode, GUILayout.Width(80));
 
-            EditorGUILayout.Space(10);
+            if (_viewMode == ViewMode.Tree)
+            {
+                if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(70)))
+                {
+                    SetAllTreeFoldState(true);
+                }
+                if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(70)))
+                {
+                    SetAllTreeFoldState(false);
+                }
+            }
 
-            EditorGUILayout.LabelField("搜索:", GUILayout.Width(40));
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("搜索:", GUILayout.Width(35));
             var newSearch = EditorGUILayout.TextField(_search, EditorStyles.toolbarSearchField);
             if (newSearch != _search)
             {
@@ -89,6 +112,15 @@ namespace Fuel.RedDot.Editor
             {
                 _search = "";
                 _searchList.Clear();
+            }
+
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("保存并生成枚举", EditorStyles.toolbarButton, GUILayout.Width(110)))
+            {
+                GenerateCode();
+                EditorUtility.SetDirty(_configAsset);
+                AssetDatabase.SaveAssets();
+                EditorUtility.DisplayDialog("成功", "保存成功！", "确定");
             }
 
             EditorGUILayout.EndHorizontal();
@@ -128,10 +160,13 @@ namespace Fuel.RedDot.Editor
                 return;
             }
 
-            foreach (var item in _configAsset.Data.OrderBy(d => d.Id))
+            DrawTableHeader();
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Width(900));
+            foreach (var item in _configAsset.Data.OrderBy(d => d.Id).ToList())
             {
                 DrawRedDotItem(item);
             }
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawPageView()
@@ -168,10 +203,13 @@ namespace Fuel.RedDot.Editor
             int startIndex = (_currentPage - 1) * _pageSize;
             int endIndex = Math.Min(startIndex + _pageSize, sortedData.Count);
 
+            DrawTableHeader();
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
             for (int i = startIndex; i < endIndex; i++)
             {
                 DrawRedDotItem(sortedData[i]);
             }
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawTreeView()
@@ -185,11 +223,13 @@ namespace Fuel.RedDot.Editor
                 return;
             }
 
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
             var rootNodes = BuildTree();
             foreach (var node in rootNodes)
             {
                 DrawTreeNode(node, 0);
             }
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawSearchView()
@@ -203,79 +243,57 @@ namespace Fuel.RedDot.Editor
                 return;
             }
 
-            foreach (var item in _searchList)
+            DrawTableHeader();
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+            foreach (var item in _searchList.ToList())
             {
                 DrawRedDotItem(item);
             }
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawTableHeader()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar, GUILayout.Width(TableWidth));
+            EditorGUILayout.LabelField("ID", GUILayout.Width(IdColumnWidth));
+            EditorGUILayout.LabelField("Path", GUILayout.Width(PathColumnWidth));
+            EditorGUILayout.LabelField("类型", GUILayout.Width(TypeColumnWidth));
+            EditorGUILayout.LabelField("周期", GUILayout.Width(PeriodColumnWidth));
+            EditorGUILayout.LabelField("显示", GUILayout.Width(ShowColumnWidth));
+            EditorGUILayout.LabelField("枚举名", GUILayout.Width(AliasColumnWidth));
+            EditorGUILayout.LabelField("存储", GUILayout.Width(SaveColumnWidth));
+            EditorGUILayout.LabelField("操作", GUILayout.Width(OperationColumnWidth));
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawRedDotItem(RedDotConfigAsset.RedDotConfigData data)
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.BeginHorizontal();
             GUI.color = _selectedItem == data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white;
+            float contentWidth = TableContentWidth;
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(TableWidth));
 
-            EditorGUILayout.LabelField($"ID: {data.Id}", GUILayout.Width(80));
+            Rect selectableRect = EditorGUILayout.BeginHorizontal(GUILayout.Width(contentWidth));
+            EditorGUILayout.LabelField(data.Id.ToString(), GUILayout.Width(IdColumnWidth));
+            EditorGUILayout.LabelField(data.Path, GUILayout.Width(PathColumnWidth));
+            EditorGUILayout.LabelField(data.IsView ? "查看" : "数量", GUILayout.Width(TypeColumnWidth));
+            EditorGUILayout.LabelField(data.IsView ? data.ViewType.ToString() : "-", GUILayout.Width(PeriodColumnWidth));
+            EditorGUILayout.LabelField(data.ShowType.ToString(), GUILayout.Width(ShowColumnWidth));
+            EditorGUILayout.LabelField(string.IsNullOrEmpty(data.Alias) ? "-" : data.Alias, GUILayout.Width(AliasColumnWidth));
+            EditorGUILayout.LabelField(data.UseLocalSave ? "是" : "否", GUILayout.Width(SaveColumnWidth));
+            EditorGUILayout.EndHorizontal();
 
-            var newPath = EditorGUILayout.TextField(data.Path, GUILayout.Width(300));
-            if (newPath != data.Path)
+            if (Event.current.type == EventType.MouseDown && selectableRect.Contains(Event.current.mousePosition))
             {
-                data.Path = newPath;
-                OnPathChanged(data);
+                _selectedItem = _selectedItem == data ? null : data;
+                Event.current.Use();
+                Repaint();
             }
 
-            EditorGUILayout.Space(10);
-
-            var isView = EditorGUILayout.Toggle(data.IsView, GUILayout.Width(20));
-            if (isView != data.IsView)
-            {
-                data.IsView = isView;
-                if (!isView)
-                {
-                    data.ViewType = ViewType.Once;
-                    data.BindRole = false;
-                }
-            }
-
-            EditorGUILayout.LabelField(data.IsView
-                ? EditorGUIUtility.IconContent("animationvisibilitytoggleon")
-                : EditorGUIUtility.IconContent("animationvisibilitytoggleoff"), GUILayout.Width(20));
-
-            if (data.IsView)
-            {
-                EditorGUILayout.Space(10);
-                EditorGUILayout.LabelField("查看类型:", GUILayout.Width(55));
-                data.ViewType = (ViewType)EditorGUILayout.EnumPopup(data.ViewType);
-                EditorGUILayout.Space(10);
-                EditorGUILayout.LabelField("绑定角色:", GUILayout.Width(55));
-                data.BindRole = EditorGUILayout.Toggle(data.BindRole, GUILayout.Width(20));
-            }
-            else
-            {
-                EditorGUILayout.Space(20);
-            }
-
-            EditorGUILayout.LabelField("红点类型:", GUILayout.Width(55));
-            data.ShowType = (RedDotShowType)EditorGUILayout.EnumPopup(data.ShowType);
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("自定义枚举:", GUILayout.Width(70));
-            data.Alias = EditorGUILayout.TextField(data.Alias, GUILayout.Width(150));
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("本地储存:", GUILayout.Width(55));
-            data.UseLocalSave = EditorGUILayout.Toggle(data.UseLocalSave, GUILayout.Width(20));
-
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("复制路径", GUILayout.Width(100)))
+            if (GUILayout.Button("复制", GUILayout.Width(45)))
             {
                 _newPath = data.Path;
             }
-            if (GUILayout.Button("编辑", GUILayout.Width(50)))
-            {
-                _selectedItem = data;
-            }
-            if (GUILayout.Button("删除", GUILayout.Width(50)))
+            if (GUILayout.Button("删除", GUILayout.Width(45)))
             {
                 if (EditorUtility.DisplayDialog("确认删除",
                     $"确定要删除红点 {data.Path} 吗？",
@@ -285,44 +303,54 @@ namespace Fuel.RedDot.Editor
                     if (_selectedItem == data)
                         _selectedItem = null;
                     EditorUtility.SetDirty(_configAsset);
-                    AssetDatabase.SaveAssets();
                 }
             }
-            GUI.color = Color.white;
 
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.Space(5);
+            GUI.color = Color.white;
         }
 
         private void DrawTreeNode(TreeNode node, int indent)
         {
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
             GUILayout.Space(indent * 20);
             GUI.color = _selectedItem == node.Data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white;
 
-            if (!_expandedStates.ContainsKey(node.Data.Path))
+            bool hasChildren = node.Children.Count > 0;
+            bool expanded = false;
+            if (hasChildren)
             {
-                _expandedStates[node.Data.Path] = false;
+                if (!_expandedStates.ContainsKey(node.Data.Path))
+                {
+                    _expandedStates[node.Data.Path] = false;
+                }
+
+                EditorGUILayout.BeginHorizontal(GUILayout.Width(PathColumnWidth));
+                expanded = EditorGUILayout.Foldout(_expandedStates[node.Data.Path], node.Data.Path, true);
+                EditorGUILayout.EndHorizontal();
+                _expandedStates[node.Data.Path] = expanded;
             }
+            else
+            {
+                EditorGUILayout.LabelField(node.Data.Path, GUILayout.Width(PathColumnWidth));
+            }
+            EditorGUILayout.LabelField($"ID: {node.Data.Id}", GUILayout.Width(IdColumnWidth));
+            EditorGUILayout.LabelField(node.Data.IsView ? "查看" : "数量", GUILayout.Width(TypeColumnWidth));
+            EditorGUILayout.LabelField(node.Data.IsView ? node.Data.ViewType.ToString() : "-", GUILayout.Width(PeriodColumnWidth));
+            EditorGUILayout.LabelField(node.Data.ShowType.ToString(), GUILayout.Width(ShowColumnWidth));
+            EditorGUILayout.LabelField(node.Data.UseLocalSave ? "是" : "否", GUILayout.Width(SaveColumnWidth));
 
-            bool expanded = EditorGUILayout.Foldout(_expandedStates[node.Data.Path], node.Data.Path);
-            _expandedStates[node.Data.Path] = expanded;
             GUILayout.FlexibleSpace();
-            EditorGUILayout.Space(20);
-            EditorGUILayout.LabelField($"ID: {node.Data.Id}", GUILayout.Width(80));
-
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("复制路径", GUILayout.Width(100)))
+            if (GUILayout.Button("复制", GUILayout.Width(45)))
             {
                 _newPath = node.Data.Path;
             }
-            if (GUILayout.Button("编辑", GUILayout.Width(50)))
+            if (GUILayout.Button("编辑", GUILayout.Width(45)))
             {
-                _selectedItem = node.Data;
+                _selectedItem = _selectedItem == node.Data ? null : node.Data;
             }
 
-            if (GUILayout.Button("删除", GUILayout.Width(50)))
+            if (GUILayout.Button("删除", GUILayout.Width(45)))
             {
                 if (EditorUtility.DisplayDialog("确认删除",
                     $"确定要删除红点 {node.Data.Path} 吗？",
@@ -333,13 +361,12 @@ namespace Fuel.RedDot.Editor
                     if (_selectedItem == node.Data)
                         _selectedItem = null;
                     EditorUtility.SetDirty(_configAsset);
-                    AssetDatabase.SaveAssets();
                 }
             }
             GUI.color = Color.white;
             EditorGUILayout.EndHorizontal();
 
-            if (expanded && node.Children.Count > 0)
+            if (hasChildren && expanded)
             {
                 foreach (var child in node.Children)
                 {
@@ -386,19 +413,29 @@ namespace Fuel.RedDot.Editor
 
         private void DrawSelectedItem()
         {
-            if (_selectedItem == null) return;
-            GUI.color = new Color(0.000f, 1.000f, 0.918f, 1.000f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField("编辑选中项", EditorStyles.boldLabel);
-            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("选中项详情", EditorStyles.boldLabel);
+            EditorGUILayout.Space(6);
 
-            EditorGUILayout.LabelField($"ID: {_selectedItem.Id}");
-            EditorGUILayout.LabelField($"路径: {_selectedItem.Path}");
+            if (_selectedItem == null || !_configAsset.Data.Contains(_selectedItem))
+            {
+                _selectedItem = null;
+                EditorGUILayout.HelpBox("从左侧列表或树中选择一个红点进行编辑。", MessageType.Info);
+                EditorGUILayout.EndVertical();
+                return;
+            }
 
-            EditorGUILayout.Space(10);
+            EditorGUI.BeginChangeCheck();
 
-            EditorGUILayout.LabelField("是否查看:");
-            var isView = EditorGUILayout.Toggle(_selectedItem.IsView);
+            EditorGUILayout.LabelField("ID", _selectedItem.Id.ToString());
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("路径", GUILayout.Width(70));
+            var newPath = EditorGUILayout.TextField(_selectedItem.Path);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(4);
+            var isView = EditorGUILayout.Toggle("查看红点", _selectedItem.IsView);
             if (isView != _selectedItem.IsView)
             {
                 _selectedItem.IsView = isView;
@@ -411,67 +448,65 @@ namespace Fuel.RedDot.Editor
 
             if (_selectedItem.IsView)
             {
-                EditorGUILayout.Space(10);
-                EditorGUILayout.LabelField("查看类型:");
-                _selectedItem.ViewType = (ViewType)EditorGUILayout.EnumPopup(_selectedItem.ViewType);
-                EditorGUILayout.Space(10);
-                EditorGUILayout.LabelField("绑定角色:");
-                _selectedItem.BindRole = EditorGUILayout.Toggle(_selectedItem.BindRole);
+                _selectedItem.ViewType = (ViewType)EditorGUILayout.EnumPopup("查看周期", _selectedItem.ViewType);
+                _selectedItem.BindRole = EditorGUILayout.Toggle("绑定角色", _selectedItem.BindRole);
             }
-            else
+            else if (_selectedItem.UseLocalSave)
             {
-                if (_selectedItem.UseLocalSave)
+                _selectedItem.BindRole = EditorGUILayout.Toggle("绑定角色", _selectedItem.BindRole);
+            }
+
+            _selectedItem.ShowType = (RedDotShowType)EditorGUILayout.EnumPopup("显示样式", _selectedItem.ShowType);
+            _selectedItem.Alias = EditorGUILayout.TextField("枚举名", _selectedItem.Alias);
+            _selectedItem.UseLocalSave = EditorGUILayout.Toggle("本地储存", _selectedItem.UseLocalSave);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (newPath != _selectedItem.Path)
                 {
-                    EditorGUILayout.Space(10);
-                    EditorGUILayout.LabelField("绑定角色:", GUILayout.Width(55));
-                    _selectedItem.BindRole = EditorGUILayout.Toggle(_selectedItem.BindRole, GUILayout.Width(20));
+                    _selectedItem.Path = newPath;
+                    OnPathChanged(_selectedItem);
+                }
+                else
+                {
+                    EditorUtility.SetDirty(_configAsset);
                 }
             }
 
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("红点类型:");
-            _selectedItem.ShowType = (RedDotShowType)EditorGUILayout.EnumPopup(_selectedItem.ShowType);
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("自定义枚举:");
-            _selectedItem.Alias = EditorGUILayout.TextField(_selectedItem.Alias);
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("本地储存:");
-            _selectedItem.UseLocalSave = EditorGUILayout.Toggle(_selectedItem.UseLocalSave);
-
-            EditorGUILayout.Space(10);
-
-            if (GUILayout.Button("取消选择", GUILayout.Width(100)))
+            EditorGUILayout.Space(8);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("复制路径"))
+            {
+                _newPath = _selectedItem.Path;
+            }
+            if (GUILayout.Button("取消选择"))
             {
                 _selectedItem = null;
             }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
-            GUI.color = Color.white;
         }
 
         private void DrawOperations()
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField("操作", EditorStyles.boldLabel);
-            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("新增红点", EditorStyles.boldLabel);
+            EditorGUILayout.Space(6);
 
-            EditorGUILayout.LabelField("新增红点路径:（全路径自动拆分）");
+            EditorGUILayout.LabelField("新增路径（全路径自动拆分）");
             _newPath = EditorGUILayout.TextField(_newPath);
 
-            EditorGUILayout.Space(10);
-
+            EditorGUILayout.Space(6);
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("添加红点", GUILayout.Width(100)))
+            if (GUILayout.Button("添加红点"))
             {
                 AddRedDot();
                 SortData();
             }
-            if (GUILayout.Button("保存", GUILayout.Width(100)))
+            if (GUILayout.Button("保存"))
             {
-                GenerateCode();
                 EditorUtility.SetDirty(_configAsset);
                 AssetDatabase.SaveAssets();
                 EditorUtility.DisplayDialog("成功", "保存成功！", "确定");
@@ -484,15 +519,37 @@ namespace Fuel.RedDot.Editor
         private void UpdateSearchList()
         {
             _searchList.Clear();
-            if (_configAsset?.Data != null)
+            if (_configAsset?.Data == null || string.IsNullOrEmpty(_search))
             {
-                foreach (var item in _configAsset.Data)
+                return;
+            }
+
+            foreach (var item in _configAsset.Data)
+            {
+                if (ContainsIgnoreCase(item.Path, _search) ||
+                    ContainsIgnoreCase(item.Id.ToString(), _search) ||
+                    ContainsIgnoreCase(item.Alias, _search))
                 {
-                    if (item.Path.Contains(_search)||item.Id.ToString().Contains(_search))
-                    {
-                        _searchList.Add(item);
-                    }
+                    _searchList.Add(item);
                 }
+            }
+        }
+
+        private bool ContainsIgnoreCase(string source, string value)
+        {
+            return !string.IsNullOrEmpty(source) && source.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void SetAllTreeFoldState(bool expanded)
+        {
+            if (_configAsset?.Data == null)
+            {
+                return;
+            }
+
+            foreach (var item in _configAsset.Data)
+            {
+                _expandedStates[item.Path] = expanded;
             }
         }
 
@@ -525,7 +582,6 @@ namespace Fuel.RedDot.Editor
 
             SortData();
             EditorUtility.SetDirty(_configAsset);
-            AssetDatabase.SaveAssets();
         }
 
         private void AddRedDot()
@@ -539,6 +595,7 @@ namespace Fuel.RedDot.Editor
             var splitData = _newPath.Split('/');
             string path = "";
 
+            RedDotConfigAsset.RedDotConfigData selectedItem = null;
             for (int i = 0; i < splitData.Length; i++)
             {
                 path += splitData[i];
@@ -553,6 +610,7 @@ namespace Fuel.RedDot.Editor
                     };
                     _configAsset.Data.Add(item);
                 }
+                selectedItem = item;
                 if (i < splitData.Length - 1)
                 {
                     path += "/";
@@ -560,9 +618,9 @@ namespace Fuel.RedDot.Editor
             }
 
             SortData();
+            _selectedItem = selectedItem;
             _newPath = "";
             EditorUtility.SetDirty(_configAsset);
-            AssetDatabase.SaveAssets();
         }
 
         private void GenerateCode()

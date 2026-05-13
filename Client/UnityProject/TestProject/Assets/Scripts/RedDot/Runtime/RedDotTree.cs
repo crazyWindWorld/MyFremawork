@@ -63,30 +63,11 @@ namespace Fuel.RedDot.RunTime
                 string timestamp = GetLocalSaveData(bindRole, TREE_ROOT + "/" + path);
                 if (!string.IsNullOrEmpty(timestamp))
                 {
-                    DateTime dateTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(timestamp)).LocalDateTime;
-                    switch (viewType)
+                    DateTime lastWatchTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(timestamp)).LocalDateTime;
+                    DateTime now = DateTime.Now;
+                    if (ShouldShowViewRedDot(viewType, lastWatchTime, now))
                     {
-                        case ViewType.Day:
-                            if (dateTime.Day != DateTime.UtcNow.Day)
-                            {
-                                redDotNode.SetStatus(1);
-                            }
-
-                            break;
-                        case ViewType.Week:
-                            if (!IsInSameWeek(dateTime, DateTime.UtcNow))
-                            {
-                                redDotNode.SetStatus(1);
-                            }
-
-                            break;
-                        case ViewType.Month:
-                            if (dateTime.Month != DateTime.UtcNow.Month)
-                            {
-                                redDotNode.SetStatus(1);
-                            }
-
-                            break;
+                        redDotNode.SetStatus(1);
                     }
                 }
                 else
@@ -210,32 +191,22 @@ namespace Fuel.RedDot.RunTime
                 return true;
             }
 
-            DateTime dateTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(saveKey)).LocalDateTime;
-            switch (redDotConfigData.ViewType)
+            DateTime lastWatchTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(saveKey)).LocalDateTime;
+            return ShouldShowViewRedDot(redDotConfigData.ViewType, lastWatchTime, DateTime.Now);
+        }
+
+        private bool ShouldShowViewRedDot(ViewType viewType, DateTime lastWatchTime, DateTime now)
+        {
+            switch (viewType)
             {
                 case ViewType.Once:
                     return false;
                 case ViewType.Day:
-                    if (dateTime.Day == DateTime.Now.Day)
-                    {
-                        return false;
-                    }
-
-                    break;
+                    return lastWatchTime.Date != now.Date;
                 case ViewType.Week:
-                    if (DateTime.UtcNow.Day - dateTime.Day <= 7)
-                    {
-                        return false;
-                    }
-
-                    break;
+                    return !IsInSameWeek(lastWatchTime, now);
                 case ViewType.Month:
-                    if (DateTime.UtcNow.Month == dateTime.Month)
-                    {
-                        return false;
-                    }
-
-                    break;
+                    return lastWatchTime.Year != now.Year || lastWatchTime.Month != now.Month;
             }
 
             return true;
@@ -385,12 +356,16 @@ namespace Fuel.RedDot.RunTime
         /// <returns></returns> 
         private bool IsInSameWeek(DateTime dtmS, DateTime dtmE)
         {
-            TimeSpan ts = dtmE - dtmS;
-            double dbl = ts.TotalDays;
-            int intDow = Convert.ToInt32(dtmE.DayOfWeek);
-            if (intDow == 0) intDow = 7;
-            if (dbl >= 7 || dbl >= intDow) return false;
-            else return true;
+            DateTime startDate = dtmS.Date;
+            DateTime endDate = dtmE.Date;
+            int startDayOfWeek = (int)startDate.DayOfWeek;
+            int endDayOfWeek = (int)endDate.DayOfWeek;
+            if (startDayOfWeek == 0) startDayOfWeek = 7;
+            if (endDayOfWeek == 0) endDayOfWeek = 7;
+
+            DateTime startWeekMonday = startDate.AddDays(1 - startDayOfWeek);
+            DateTime endWeekMonday = endDate.AddDays(1 - endDayOfWeek);
+            return startWeekMonday == endWeekMonday;
         }
         #endregion
     }

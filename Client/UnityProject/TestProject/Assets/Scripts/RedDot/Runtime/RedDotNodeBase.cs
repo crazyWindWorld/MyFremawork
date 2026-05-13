@@ -48,38 +48,39 @@ namespace Fuel.RedDot.RunTime
                 return null;
             }
 
-            var splitPath = path.Split("/");
-            string nextNodeName = splitPath[0];
+            var splitPath = path.Split('/');
+            return InitNode(splitPath, 0, isView, bindRole);
+        }
 
-            if (nextNodeName.Equals(path)) //叶子节点
+        private RedDotNodeBase InitNode(string[] splitPath, int index, bool isView, bool bindRole)
+        {
+            string nextNodeName = splitPath[index];
+            bool isLeaf = index == splitPath.Length - 1;
+
+            if (m_children == null || !m_children.ContainsKey(nextNodeName))
             {
-                if (m_children == null || !m_children.ContainsKey(nextNodeName))
+                m_children ??= new Dictionary<string, RedDotNodeBase>();
+                RedDotNodeBase redDotNode;
+                if (isLeaf)
                 {
-                    m_children ??= new Dictionary<string, RedDotNodeBase>();
-                    RedDotNodeBase redDotNode;
-                    if (isView)
-                    {
-                        redDotNode = new RedDotViewNode(nextNodeName, bindRole, this);
-                    }
-                    else
-                    {
-                        redDotNode = new RedDotNumberNode(nextNodeName, this);
-                    }
-
-                    m_children.Add(nextNodeName, redDotNode);
+                    redDotNode = isView
+                        ? new RedDotViewNode(nextNodeName, bindRole, this)
+                        : new RedDotNumberNode(nextNodeName, this);
                 }
+                else
+                {
+                    redDotNode = new RedDotNumberNode(nextNodeName, this);
+                }
+
+                m_children.Add(nextNodeName, redDotNode);
+            }
+
+            if (isLeaf)
+            {
                 return m_children[nextNodeName];
             }
-            else
-            {
-                path = path.Remove(0, nextNodeName.Length + 1);
-                if (m_children == null || !m_children.ContainsKey(nextNodeName))
-                {
-                    m_children ??= new Dictionary<string, RedDotNodeBase>();
-                    m_children.Add(nextNodeName, new RedDotNumberNode(nextNodeName, this));
-                }
-                return m_children[nextNodeName].InitNode(path, isView, bindRole);
-            }
+
+            return m_children[nextNodeName].InitNode(splitPath, index + 1, isView, bindRole);
         }
 
         /// <summary>
@@ -94,20 +95,24 @@ namespace Fuel.RedDot.RunTime
                 return null;
             }
 
-            var splitPath = path.Split("/");
-            string nextNodeName = splitPath[0];
+            var splitPath = path.Split('/');
+            return GetRedDotNode(splitPath, 0);
+        }
 
-            if (m_children == null || !m_children.ContainsKey(nextNodeName))
+        private RedDotNodeBase GetRedDotNode(string[] splitPath, int index)
+        {
+            string nextNodeName = splitPath[index];
+            if (m_children == null || !m_children.TryGetValue(nextNodeName, out var childNode))
             {
                 return null;
             }
 
-            if (nextNodeName.Equals(path)) //叶子结点
+            if (index == splitPath.Length - 1)
             {
-                return m_children[nextNodeName];
+                return childNode;
             }
-            path = path.Remove(0, nextNodeName.Length + 1);
-            return m_children[nextNodeName].GetRedDotNode(path);
+
+            return childNode.GetRedDotNode(splitPath, index + 1);
         }
 
         public virtual void SetStatus(int count)

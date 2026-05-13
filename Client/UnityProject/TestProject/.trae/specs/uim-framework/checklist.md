@@ -1,0 +1,21 @@
+- [x] UILayerConfig 层级配置类正确实现为 ScriptableObject 单例，支持多层级定义和 Z 轴间距配置
+- [x] UIWindow 基类不继承 Monobehaviour，实现完整的生命周期方法
+- [x] UIWindow 提供 RegisterEvents 和 UnregisterEvents 接口
+- [x] UIStack 使用 List 模拟栈，实现 Push/Pop/Clear 方法
+- [x] UIStack 在入栈时检查层级，低于栈顶时自动清空栈
+- [x] UIStack 支持重复窗口检测，自动出栈到指定位置
+- [x] UIResourceManager 实现资源加载、释放和缓存功能
+- [x] UIResourceManager 维护窗口映射关系，支持重新加载已释放资源
+- [x] UIManager 实现单例模式，初始化时创建 Canvas 和初始化子系统
+- [x] UIManager.OpenWindow 方法支持动态栈数量控制
+- [x] UIManager 在打开界面时自动调用 RegisterEvents
+- [x] UIManager 在关闭界面时自动调用 UnregisterEvents
+- [x] 所有组件编译无错误
+- [x] UIEditorDebugWindow 编辑器窗口正确显示层级配置和栈数据
+- [x] UIAutoBindTool 支持手动拖拽绑定 GameObject/Component 到 Panel 字段
+- [x] UIAutoBindTool 支持根据字段名称自动匹配 View 子节点并绑定
+- [x] UIAutoBindTool 支持自定义名称规则配置（Btn→Button, Img→Image 等）
+- [x] UIAutoBindTool 根据 UI 节点名称前缀自动推断并绑定对应组件类型
+- [x] UIAutoBindTool 扩展 Hierarchy 右键菜单，支持选择组件类型和自定命名字段
+- [x] UIAutoBindTool 支持同一节点绑定多个组件（Image + RectTransform 等）
+- [x] UIAutoBindTool 绑定配置正确序列化存储

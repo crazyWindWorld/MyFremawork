@@ -46,7 +46,7 @@ namespace Fuel.RedDot.RunTime
             else
             {
                 RedDotCount += number;
-                if (RedDotCount + number < 0)
+                if (RedDotCount < 0)
                 {
                     RedDotCount = 0;
                 }
