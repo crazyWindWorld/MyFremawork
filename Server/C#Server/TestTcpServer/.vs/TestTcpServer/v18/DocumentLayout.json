@@ -1,0 +1,85 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\testtcpserver\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\testtcpserver\\relayserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\relayserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\testtcpserver\\protocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{00929775-CC2C-40E9-BB95-40A1F2AEB484}|TestTcpServer\\TestTcpServer.csproj|solutionrelative:testtcpserver\\protocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "packages.config",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\packages.config",
+              "RelativeDocumentMoniker": "TestTcpServer\\packages.config",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\packages.config",
+              "RelativeToolTip": "TestTcpServer\\packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-05-04T14:46:02.157Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RelayServer.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\RelayServer.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\RelayServer.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\RelayServer.cs",
+              "RelativeToolTip": "TestTcpServer\\RelayServer.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAAwBUAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T14:45:57.257Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Protocol.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Protocol.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Protocol.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Protocol.cs",
+              "RelativeToolTip": "TestTcpServer\\Protocol.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T14:45:55.681Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Program.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeToolTip": "TestTcpServer\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGUAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T14:43:05.608Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -72,4 +72,16 @@ public static partial class ProtoCmds {
     public const ushort GetAnnouncementReq = 10010;
     public const ushort GetAnnouncementRsp = 10011;
 
+    // ─── GameServer 新增命令 ──────────────────────────────────────
+    // 心跳（复用 PING/PONG 的 ID，提供语义化别名）
+    public const ushort PingReq  = PING;   // 4000
+    public const ushort PongRsp  = PONG;   // 4001
+
+    // 登出
+    public const ushort LogoutReq = 10008;
+    public const ushort LogoutRsp = 10009;
+
+    // 踢人推送（服务端→客户端，强制下线）
+    public const ushort KickPush  = 10012;
+
 }

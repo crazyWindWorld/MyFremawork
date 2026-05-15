@@ -1,0 +1,139 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\core\\routing\\msghandlerattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\core\\routing\\msghandlerattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\handlers\\loginhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\handlers\\loginhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\services\\gatewayhostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\services\\gatewayhostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\core\\context\\playerstatecache.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\core\\context\\playerstatecache.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\handlers\\pinghandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\handlers\\pinghandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|e:\\unityproject\\myfremawork\\server\\c#server\\testtcpserver\\testtcpserver\\handlers\\logouthandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|TestTcpServer\\GameServer.csproj|solutionrelative:testtcpserver\\handlers\\logouthandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MsgHandlerAttribute.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Core\\Routing\\MsgHandlerAttribute.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Core\\Routing\\MsgHandlerAttribute.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Core\\Routing\\MsgHandlerAttribute.cs",
+              "RelativeToolTip": "TestTcpServer\\Core\\Routing\\MsgHandlerAttribute.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:21:11.101Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GatewayHostedService.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Services\\GatewayHostedService.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Services\\GatewayHostedService.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Services\\GatewayHostedService.cs",
+              "RelativeToolTip": "TestTcpServer\\Services\\GatewayHostedService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:20:24.997Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Program.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Program.cs",
+              "RelativeToolTip": "TestTcpServer\\Program.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAADMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:11:29.125Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PlayerStateCache.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Core\\Context\\PlayerStateCache.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Core\\Context\\PlayerStateCache.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Core\\Context\\PlayerStateCache.cs",
+              "RelativeToolTip": "TestTcpServer\\Core\\Context\\PlayerStateCache.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwv0YAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:09:11.603Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LoginHandler.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\LoginHandler.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Handlers\\LoginHandler.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\LoginHandler.cs",
+              "RelativeToolTip": "TestTcpServer\\Handlers\\LoginHandler.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABkAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:08:50.807Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PingHandler.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\PingHandler.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Handlers\\PingHandler.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\PingHandler.cs",
+              "RelativeToolTip": "TestTcpServer\\Handlers\\PingHandler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:05:48.541Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "LogoutHandler.cs",
+              "DocumentMoniker": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\LogoutHandler.cs",
+              "RelativeDocumentMoniker": "TestTcpServer\\Handlers\\LogoutHandler.cs",
+              "ToolTip": "E:\\UnityProject\\MyFremawork\\Server\\C#Server\\TestTcpServer\\TestTcpServer\\Handlers\\LogoutHandler.cs",
+              "RelativeToolTip": "TestTcpServer\\Handlers\\LogoutHandler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T15:05:45.348Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
