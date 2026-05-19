@@ -1,4 +1,4 @@
-namespace Fuel.Event
+namespace Fuel.GameEvent
 {
     /// <summary>
     /// 事件消息接口

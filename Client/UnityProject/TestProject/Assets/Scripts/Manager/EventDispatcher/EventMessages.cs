@@ -1,4 +1,4 @@
-namespace Fuel.Event
+namespace Fuel.GameEvent
 {
     /// <summary>
     /// 窗口显示事件

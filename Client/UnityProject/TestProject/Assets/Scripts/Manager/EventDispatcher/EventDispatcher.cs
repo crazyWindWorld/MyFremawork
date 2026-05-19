@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Fuel.Singleton;
 
-namespace Fuel.Event
+namespace Fuel.GameEvent
 {
     /// <summary>
     /// 事件处理器容器

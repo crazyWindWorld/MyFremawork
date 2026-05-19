@@ -49,5 +49,6 @@ namespace Fuel.Log
     public enum LogWriter
     {
         Default,
+        SceneManager,
     }
 }
