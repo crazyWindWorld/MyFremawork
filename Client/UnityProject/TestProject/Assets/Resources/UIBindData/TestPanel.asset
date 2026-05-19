@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1873f048fece7cf4a8a6d84f7c51dd51, type: 3}
+  m_Name: TestPanel
+  m_EditorClassIdentifier: 
+  PrefabPath: Assets/Resources/UIPrefabs/TestPanel.prefab
+  ClassName: TestPanel
+  Layer: 1
+  Entries:
+  - VariableName: ImgTest
+    ComponentTypeName: UnityEngine.UI.Image
+    TargetPath: Image
+    Target: {fileID: 0}
+  - VariableName: TestPanel
+    ComponentTypeName: UnityEngine.UI.Image
+    TargetPath: 
+    Target: {fileID: 0}
+  - VariableName: GoImage3
+    ComponentTypeName: UnityEngine.GameObject
+    TargetPath: Image (2)/Image (3)
+    Target: {fileID: 0}
+  - VariableName: BtnImage3
+    ComponentTypeName: UnityEngine.UI.Button
+    TargetPath: Image (2)/Image (3)
+    Target: {fileID: 0}
+  - VariableName: ImgImage3
+    ComponentTypeName: UnityEngine.UI.Image
+    TargetPath: Image (2)/Image (3)
+    Target: {fileID: 0}
+  - VariableName: ImgImage1
+    ComponentTypeName: UnityEngine.UI.Image
+    TargetPath: Image (1)
+    Target: {fileID: 0}
+  - VariableName: RectImage2
+    ComponentTypeName: UnityEngine.RectTransform
+    TargetPath: Image (2)
+    Target: {fileID: 0}

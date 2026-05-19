@@ -65,7 +65,19 @@ namespace Manager.UIManager
             Debug.Log("[UIManager] Initialized successfully");
         }
 
-        private void Update()
+        private void OnEnable()
+        {
+            // Fix #9: replace per-frame Update() poll with a Canvas render callback
+            Canvas.preWillRenderCanvases += OnPreWillRenderCanvases;
+        }
+
+        private void OnDisable()
+        {
+            Canvas.preWillRenderCanvases -= OnPreWillRenderCanvases;
+        }
+
+        // Fix #9: fires once per frame only when canvases are about to render, cheaper than Update()
+        private void OnPreWillRenderCanvases()
         {
             if (Screen.width != _lastScreenWidth || Screen.height != _lastScreenHeight)
             {
@@ -126,7 +138,8 @@ namespace Manager.UIManager
                 _layerCanvases[layer] = canvas;
                 _layerScalers[layer] = scaler;
                 _layerRoots[layer] = layerObj.transform;
-                UILayerHelper.RegisterLayerRoot(layer, layerObj.transform);
+                // Fix #5: removed UILayerHelper.RegisterLayerRoot — that static dict duplicates
+                // _layerRoots and causes dangling references after scene reload.
             }
         }
 
@@ -147,18 +160,18 @@ namespace Manager.UIManager
 
         public void RegisterWindowFactory(string windowId, Func<UIWindowData, UIWindow> factory)
         {
-            if (!_windowFactory.ContainsKey(windowId))
-            {
-                _windowFactory.Add(windowId, factory);
-            }
-            else
-            {
-                _windowFactory[windowId] = factory;
-            }
+            _windowFactory[windowId] = factory;
         }
 
         public void RegisterWindowPrefab(string windowId, string prefabPath)
         {
+            _resourceManager.RegisterPrefabPath(windowId, prefabPath);
+        }
+
+        // Fix #6: combined registration ensures factory and prefab are always set together
+        public void RegisterWindow(string windowId, string prefabPath, Func<UIWindowData, UIWindow> factory)
+        {
+            _windowFactory[windowId] = factory;
             _resourceManager.RegisterPrefabPath(windowId, prefabPath);
         }
 
@@ -207,28 +220,21 @@ namespace Manager.UIManager
 
             HandleStackOverflow();
 
-            bool layerCompare(UILayer topLayerId, UILayer newLayerId)
-            {
-                return UILayerHelper.IsHigherLayer(topLayerId, newLayerId);
-            }
-
-            _stack.Push(window, layerCompare);
+            _stack.Push(window);
             window.OnShow(data);
             OnWindowShow?.Invoke(window);
             return window;
         }
 
+        // Fix #1: was missing the final Pop() that closes the target window itself;
+        // the old for-loop condition (_stack.Count <= index) was always false after PopToIndex.
         public void CloseWindow(string windowId)
         {
-            if (!_stack.Contains(windowId)) return;
-
             int index = _stack.FindIndex(windowId);
-            _stack.PopToIndex(index);
+            if (index < 0) return;
 
-            for (int i = _stack.Count; i <= index; i++)
-            {
-                _stack.Pop();
-            }
+            _stack.PopToIndex(index); // pop everything above the target
+            _stack.Pop();             // pop the target window itself
         }
 
         public void CloseTopWindow()
@@ -236,16 +242,12 @@ namespace Manager.UIManager
             _stack.Pop();
         }
 
+        // Fix #8: evict the oldest (bottom) window instead of the newest (top) on overflow
         private void HandleStackOverflow()
         {
             while (_stack.Count >= _maxStackCount)
             {
-                var window = _stack.TopWindow;
-                if (window != null)
-                {
-                    window.OnRelease();
-                }
-                _stack.Pop();
+                _stack.PopBottom();
             }
         }
 

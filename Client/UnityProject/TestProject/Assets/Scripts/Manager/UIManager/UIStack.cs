@@ -5,12 +5,20 @@ namespace Manager.UIManager
 {
     public class UIStack
     {
-        private List<UIWindow> _stack = new List<UIWindow>();
+        private readonly List<UIWindow> _stack = new List<UIWindow>();
+
+        // Fix #10: O(1) Contains lookup, eliminates double O(n) traversal in OpenWindow/CloseWindow
+        private readonly Dictionary<string, UIWindow> _windowMap = new Dictionary<string, UIWindow>();
+
         private Action<UIWindow> _onPop;
         private Action<UIWindow> _onClear;
 
         public int Count => _stack.Count;
         public UIWindow TopWindow => _stack.Count > 0 ? _stack[_stack.Count - 1] : null;
+
+        // Fix #8: expose bottom for overflow eviction
+        public UIWindow BottomWindow => _stack.Count > 0 ? _stack[0] : null;
+
         public IReadOnlyList<UIWindow> Stack => _stack;
 
         public UIStack(Action<UIWindow> onPop = null, Action<UIWindow> onClear = null)
@@ -32,12 +40,13 @@ namespace Manager.UIManager
 
         public int FindIndex(UIWindow window)
         {
-            return _stack.FindIndex(x => x.WindowId == window.WindowId);
+            return FindIndex(window.WindowId);
         }
 
+        // Fix #10: O(1) via Dictionary
         public bool Contains(string windowId)
         {
-            return _stack.Exists(x => x.WindowId == windowId);
+            return _windowMap.ContainsKey(windowId);
         }
 
         public bool Contains(UIWindow window)
@@ -65,17 +74,10 @@ namespace Manager.UIManager
             return 0;
         }
 
-        public void Push(UIWindow window, Func<UILayer, UILayer, bool> layerCompare = null)
+        // Fix #2: removed layerCompare — clearing higher-layer windows when pushing a lower-layer
+        // window is semantically wrong and destroys existing UI unintentionally.
+        public void Push(UIWindow window)
         {
-            if (_stack.Count > 0 && layerCompare != null)
-            {
-                var topWindow = TopWindow;
-                if (layerCompare(topWindow.LayerId, window.LayerId))
-                {
-                    Clear();
-                }
-            }
-
             int index = FindIndex(window.WindowId);
             if (index >= 0)
             {
@@ -84,6 +86,7 @@ namespace Manager.UIManager
             }
 
             _stack.Add(window);
+            _windowMap[window.WindowId] = window;
         }
 
         public UIWindow Pop()
@@ -92,7 +95,20 @@ namespace Manager.UIManager
 
             UIWindow window = _stack[_stack.Count - 1];
             _stack.RemoveAt(_stack.Count - 1);
+            _windowMap.Remove(window.WindowId);
             _onPop?.Invoke(window);
+            return window;
+        }
+
+        // Fix #8: evict the oldest (bottom) window during overflow, triggers OnRelease via _onClear
+        public UIWindow PopBottom()
+        {
+            if (_stack.Count == 0) return null;
+
+            UIWindow window = _stack[0];
+            _stack.RemoveAt(0);
+            _windowMap.Remove(window.WindowId);
+            _onClear?.Invoke(window);
             return window;
         }
 
@@ -102,6 +118,7 @@ namespace Manager.UIManager
             {
                 UIWindow window = _stack[_stack.Count - 1];
                 _stack.RemoveAt(_stack.Count - 1);
+                _windowMap.Remove(window.WindowId);
                 _onClear?.Invoke(window);
             }
         }

@@ -18,25 +18,20 @@ namespace Manager.UIManager
 
         public virtual void OnAwake()
         {
-            AutoBindComponents();
+            InitNodeProvider();
         }
 
-        private void AutoBindComponents()
-        {
-            if (ViewObject == null) return;
+        /// <summary>
+        /// Override in the generated window (via UIWindow&lt;TProvider&gt;) to pull the
+        /// NodeProvider component from ViewObject. Called automatically by OnAwake().
+        /// </summary>
+        protected virtual void InitNodeProvider() { }
 
-            var components = ViewObject.GetComponents<MonoBehaviour>();
-            foreach (var comp in components)
-            {
-                if (comp is IAutoBindable bindable)
-                {
-                    bindable.AutoBind();
-                }
-            }
-        }
-
+        // Fix #4: guard against calling Show/Hide after Release
         public virtual void OnShow(UIWindowData data = null)
         {
+            if (IsRelease) return;
+
             IsShow = true;
             if (ViewObject != null)
             {
@@ -46,8 +41,11 @@ namespace Manager.UIManager
             OnShowEvent?.Invoke(this);
         }
 
+        // Fix #4: guard against calling Hide after Release
         public virtual void OnHide()
         {
+            if (IsRelease) return;
+
             IsShow = false;
             if (ViewObject != null)
             {
@@ -60,6 +58,7 @@ namespace Manager.UIManager
         public virtual void OnRelease()
         {
             IsRelease = true;
+            IsShow = false;
             if (ViewObject != null)
             {
                 UnityEngine.Object.Destroy(ViewObject);
@@ -77,8 +76,21 @@ namespace Manager.UIManager
         public virtual void UnregisterEvents() { }
     }
 
-    public interface IAutoBindable
+    /// <summary>
+    /// Strongly-typed UIWindow that knows its NodeProvider type.
+    /// Generated windows inherit from UIWindow&lt;TProvider&gt; so that
+    /// <see cref="Nodes"/> is available as the correct type without casting.
+    /// </summary>
+    public abstract class UIWindow<TProvider> : UIWindow where TProvider : UINodeProvider
     {
-        void AutoBind();
+        public TProvider Nodes { get; private set; }
+
+        protected override void InitNodeProvider()
+        {
+            if (ViewObject == null) return;
+            Nodes = ViewObject.GetComponent<TProvider>();
+            if (Nodes == null)
+                Debug.LogWarning($"[UIWindow] NodeProvider '{typeof(TProvider).Name}' not found on '{ViewObject.name}'.");
+        }
     }
 }

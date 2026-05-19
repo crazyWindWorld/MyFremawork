@@ -21,21 +21,34 @@ namespace Manager.UIManager.Editor
             window.minSize = new Vector2(300, 200);
         }
 
+        // Fix #16: drive auto-refresh from EditorApplication.update instead of embedding
+        // timing logic inside OnGUI (which is called multiple times per frame and is
+        // not a suitable place for per-interval side effects).
+        private void OnEnable()
+        {
+            EditorApplication.update += OnEditorUpdate;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.update -= OnEditorUpdate;
+        }
+
+        private void OnEditorUpdate()
+        {
+            if (!Application.isPlaying) return;
+            if (Time.realtimeSinceStartup - _lastUpdateTime > _updateInterval)
+            {
+                _lastUpdateTime = Time.realtimeSinceStartup;
+                Repaint();
+            }
+        }
+
         void OnGUI()
         {
             EditorGUILayout.Space(10);
             DrawHeader();
             EditorGUILayout.Space(5);
-
-            if (Application.isPlaying)
-            {
-                if (Time.realtimeSinceStartup - _lastUpdateTime > _updateInterval)
-                {
-                    _lastUpdateTime = Time.realtimeSinceStartup;
-                    Repaint();
-                }
-            }
-
             _showLayers = EditorGUILayout.Foldout(_showLayers, "Layer Config", true);
             if (_showLayers)
             {

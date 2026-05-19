@@ -7,7 +7,6 @@ namespace Manager.UIManager
     public static class UILayerHelper
     {
         private const int Z_SPACING = 1000;
-        private static readonly Dictionary<UILayer, Transform> _layerRoots = new Dictionary<UILayer, Transform>();
 
         public static int GetZ(UILayer layer)
         {
@@ -19,22 +18,10 @@ namespace Manager.UIManager
             return layer.ToString();
         }
 
-        public static void RegisterLayerRoot(UILayer layer, Transform root)
-        {
-            if (!_layerRoots.ContainsKey(layer))
-            {
-                _layerRoots.Add(layer, root);
-            }
-            else
-            {
-                _layerRoots[layer] = root;
-            }
-        }
-
-        public static Transform GetLayerRoot(UILayer layer)
-        {
-            return _layerRoots.TryGetValue(layer, out var root) ? root : null;
-        }
+        // Fix #5: removed static _layerRoots dictionary, RegisterLayerRoot, and GetLayerRoot.
+        // That static dictionary duplicated UIManager._layerRoots and caused dangling Transform
+        // references after scene reload because static fields are never cleared between scenes.
+        // Use UIManager.Instance.GetLayerRoot() for runtime layer root lookups.
 
         public static bool IsHigherLayer(UILayer layer1, UILayer layer2)
         {
