@@ -100,6 +100,21 @@ namespace Manager.SceneManager
             return emptyRoot;
         }
 
+        private void ClearSceneRoot(string sceneId)
+        {
+            if (!_sceneRoots.TryGetValue(sceneId, out var root))
+            {
+                return;
+            }
+
+            _sceneRoots.Remove(sceneId);
+
+            if (root != null)
+            {
+                UnityEngine.Object.Destroy(root);
+            }
+        }
+
         #endregion
 
         #region Scene Script Management

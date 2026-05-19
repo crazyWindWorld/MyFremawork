@@ -22,6 +22,13 @@ namespace Manager.SceneManager
         public void LoadMainScene(string sceneId, SceneData sceneData = null,
             Action<float> onProgress = null, Action onComplete = null)
         {
+            if (_currentMainScene != null && _currentMainScene.SceneId == sceneId)
+            {
+                DebugLogger.LogWarning(LogWriter.SceneManager, $"Main scene {sceneId} is already loaded");
+                onComplete?.Invoke();
+                return;
+            }
+
             if (_loadingScenes.Contains(sceneId))
             {
                 DebugLogger.LogWarning(LogWriter.SceneManager, $"Scene {sceneId} is already loading");
@@ -50,40 +57,45 @@ namespace Manager.SceneManager
             string oldSceneId = _currentMainScene?.SceneId;
             _loadingScenes.Add(sceneId);
 
-            // 通知开始加载
-            EventDispatcher.Instance.Dispatch(new Scene_LoadStartEvent
+            try
             {
-                SceneId = sceneId,
-                IsMainScene = true
-            });
+                // 通知开始加载
+                EventDispatcher.Instance.Dispatch(new Scene_LoadStartEvent
+                {
+                    SceneId = sceneId,
+                    IsMainScene = true
+                });
 
-            // 卸载所有附加场景
-            await UnloadAllAdditiveScenesAsync();
+                // 卸载所有附加场景
+                await UnloadAllAdditiveScenesAsync();
 
-            // 卸载当前主场景
-            if (_currentMainScene != null)
-            {
-                await UnloadSceneAsync(_currentMainScene);
+                // 卸载当前主场景
+                if (_currentMainScene != null)
+                {
+                    await UnloadSceneAsync(_currentMainScene);
+                }
+
+                // 异步加载新场景
+                await LoadSceneAsync(sceneInfo, true, sceneData, onProgress);
+
+                _currentMainScene = sceneInfo;
+
+                // 通知主场景切换
+                EventDispatcher.Instance.Dispatch(new Scene_MainSceneChangedEvent
+                {
+                    OldSceneId = oldSceneId,
+                    NewSceneId = sceneId
+                });
+
+                onComplete?.Invoke();
+                OnSceneLoaded?.Invoke(sceneInfo);
+
+                DebugLogger.Log(LogWriter.SceneManager, $"Main scene loaded: {sceneId}");
             }
-
-            // 异步加载新场景
-            await LoadSceneAsync(sceneInfo, true, sceneData, onProgress);
-
-            _currentMainScene = sceneInfo;
-
-            // 通知主场景切换
-            EventDispatcher.Instance.Dispatch(new Scene_MainSceneChangedEvent
+            finally
             {
-                OldSceneId = oldSceneId,
-                NewSceneId = sceneId
-            });
-
-            _loadingScenes.Remove(sceneId);
-
-            onComplete?.Invoke();
-            OnSceneLoaded?.Invoke(sceneInfo);
-
-            DebugLogger.Log(LogWriter.SceneManager, $"Main scene loaded: {sceneId}");
+                _loadingScenes.Remove(sceneId);
+            }
         }
 
         #endregion
@@ -100,6 +112,13 @@ namespace Manager.SceneManager
         public void LoadAdditiveScene(string sceneId, SceneData sceneData = null,
             Action<float> onProgress = null, Action onComplete = null)
         {
+            if (_sceneScripts.ContainsKey(sceneId))
+            {
+                DebugLogger.LogWarning(LogWriter.SceneManager, $"Scene {sceneId} is already loaded");
+                onComplete?.Invoke();
+                return;
+            }
+
             if (_loadingScenes.Contains(sceneId))
             {
                 DebugLogger.LogWarning(LogWriter.SceneManager, $"Scene {sceneId} is already loading");
@@ -127,33 +146,29 @@ namespace Manager.SceneManager
             string sceneId = sceneInfo.SceneId;
             _loadingScenes.Add(sceneId);
 
-            // 检查是否已加载
-            if (_sceneScripts.ContainsKey(sceneId))
+            try
             {
-                DebugLogger.LogWarning(LogWriter.SceneManager, $"Scene {sceneId} is already loaded");
-                _loadingScenes.Remove(sceneId);
+                // 通知开始加载
+                EventDispatcher.Instance.Dispatch(new Scene_LoadStartEvent
+                {
+                    SceneId = sceneId,
+                    IsMainScene = false
+                });
+
+                // 异步加载场景（additive 模式）
+                await LoadSceneAsync(sceneInfo, false, sceneData, onProgress);
+
+                _loadedAdditiveScenes.Add(sceneInfo);
+
                 onComplete?.Invoke();
-                return;
+                OnSceneLoaded?.Invoke(sceneInfo);
+
+                DebugLogger.Log(LogWriter.SceneManager, $"Additive scene loaded: {sceneId}");
             }
-
-            // 通知开始加载
-            EventDispatcher.Instance.Dispatch(new Scene_LoadStartEvent
+            finally
             {
-                SceneId = sceneId,
-                IsMainScene = false
-            });
-
-            // 异步加载场景（additive 模式）
-            await LoadSceneAsync(sceneInfo, false, sceneData, onProgress);
-
-            _loadedAdditiveScenes.Add(sceneInfo);
-
-            _loadingScenes.Remove(sceneId);
-
-            onComplete?.Invoke();
-            OnSceneLoaded?.Invoke(sceneInfo);
-
-            DebugLogger.Log(LogWriter.SceneManager, $"Additive scene loaded: {sceneId}");
+                _loadingScenes.Remove(sceneId);
+            }
         }
 
         #endregion
@@ -220,6 +235,13 @@ namespace Manager.SceneManager
 
             _loadedAdditiveScenes.RemoveAll(s => s.SceneId == sceneId);
 
+            if (_currentMainScene != null && _currentMainScene.SceneId == sceneId)
+            {
+                _currentMainScene = null;
+            }
+
+            ClearSceneRoot(sceneId);
+
             // 通知卸载完成
             EventDispatcher.Instance.Dispatch(new Scene_UnloadCompleteEvent
             {
@@ -274,7 +296,7 @@ namespace Manager.SceneManager
             // 等待加载完成并报告进度
             while (!asyncOp.isDone)
             {
-                float progress = asyncOp.progress;
+                float progress = Mathf.Clamp01(asyncOp.progress / 0.9f);
                 onProgress?.Invoke(progress);
 
                 // 通知进度事件
