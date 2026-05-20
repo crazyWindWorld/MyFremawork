@@ -8,6 +8,13 @@
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },
+    "com.code-philosophy.luban": {
+      "version": "https://gitee.com/focus-creative-games/luban_unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "061314200e2f03307c4d90b448e1de7b85431905"
+    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,
@@ -20,6 +27,13 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
+    },
+    "com.hinatayoki.lubankit": {
+      "version": "https://github.com/HinataYoki/LubanKit.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "8716b9a7c146a708ad4a0c35b661620552a8bf25"
     },
     "com.singularitygroup.hotreload": {
       "version": "file:com.singularitygroup.hotreload",

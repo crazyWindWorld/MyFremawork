@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.code-philosophy.luban": "https://gitee.com/focus-creative-games/luban_unity.git",
+    "com.hinatayoki.lubankit": "https://github.com/HinataYoki/LubanKit.git",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.tuyoogame.yooasset": "3.0.1-beta",
     "com.unity.ai.navigation": "1.1.6",

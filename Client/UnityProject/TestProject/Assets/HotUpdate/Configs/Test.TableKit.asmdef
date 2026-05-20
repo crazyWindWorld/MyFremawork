@@ -1,0 +1,23 @@
+﻿{
+    "name": "Test.TableKit",
+    "rootNamespace": "",
+    "references": [
+        "Luban.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.cysharp.unitask",
+            "expression": "",
+            "define": "YOKIFRAME_UNITASK_SUPPORT"
+        }
+    ],
+    "noEngineReferences": false
+}
