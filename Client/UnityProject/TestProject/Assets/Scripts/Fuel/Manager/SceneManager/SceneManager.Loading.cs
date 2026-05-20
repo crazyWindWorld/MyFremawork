@@ -5,6 +5,8 @@ using Cysharp.Threading.Tasks;
 using Fuel.GameEvent;
 using Fuel.Scene;
 using Fuel.Log;
+using Fuel.Manager.ResourceManager;
+using YooAsset;
 
 namespace Manager.SceneManager
 {
@@ -76,7 +78,8 @@ namespace Manager.SceneManager
                 }
 
                 // 异步加载新场景
-                await LoadSceneAsync(sceneInfo, true, sceneData, onProgress);
+                if (!await LoadSceneAsync(sceneInfo, true, sceneData, onProgress))
+                    return;
 
                 _currentMainScene = sceneInfo;
 
@@ -156,7 +159,8 @@ namespace Manager.SceneManager
                 });
 
                 // 异步加载场景（additive 模式）
-                await LoadSceneAsync(sceneInfo, false, sceneData, onProgress);
+                if (!await LoadSceneAsync(sceneInfo, false, sceneData, onProgress))
+                    return;
 
                 _loadedAdditiveScenes.Add(sceneInfo);
 
@@ -226,12 +230,8 @@ namespace Manager.SceneManager
                 _sceneScripts.Remove(sceneId);
             }
 
-            // 异步卸载场景
-            var asyncOp = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(sceneInfo.ScenePath);
-            if (asyncOp != null)
-            {
-                await asyncOp.ToUniTask();
-            }
+            // 通过资源管理器卸载场景
+            await ResourceManager.Instance.UnloadSceneAsync(sceneInfo.ScenePath);
 
             _loadedAdditiveScenes.RemoveAll(s => s.SceneId == sceneId);
 
@@ -278,35 +278,32 @@ namespace Manager.SceneManager
 
         #region Core Loading
 
-        private async UniTask LoadSceneAsync(SceneInfo sceneInfo, bool isMainScene,
+        private async UniTask<bool> LoadSceneAsync(SceneInfo sceneInfo, bool isMainScene,
             SceneData sceneData, Action<float> onProgress)
         {
-            var asyncOp = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(
+            var handle = await ResourceManager.Instance.LoadSceneAsync(
                 sceneInfo.ScenePath,
                 isMainScene
                     ? UnityEngine.SceneManagement.LoadSceneMode.Single
-                    : UnityEngine.SceneManagement.LoadSceneMode.Additive);
-
-            if (asyncOp == null)
-            {
-                DebugLogger.LogError(LogWriter.SceneManager, $"Failed to load scene: {sceneInfo.ScenePath}");
-                return;
-            }
-
-            // 等待加载完成并报告进度
-            while (!asyncOp.isDone)
-            {
-                float progress = Mathf.Clamp01(asyncOp.progress / 0.9f);
-                onProgress?.Invoke(progress);
-
-                // 通知进度事件
-                EventDispatcher.Instance.Dispatch(new Scene_LoadProgressEvent
+                    : UnityEngine.SceneManagement.LoadSceneMode.Additive,
+                UnityEngine.SceneManagement.LocalPhysicsMode.None,
+                true,
+                0,
+                progress =>
                 {
-                    SceneId = sceneInfo.SceneId,
-                    Progress = progress
+                    progress = Mathf.Clamp01(progress);
+                    onProgress?.Invoke(progress);
+                    EventDispatcher.Instance.Dispatch(new Scene_LoadProgressEvent
+                    {
+                        SceneId = sceneInfo.SceneId,
+                        Progress = progress
+                    });
                 });
 
-                await UniTask.Yield();
+            if (handle == null || handle.Status != EOperationStatus.Succeeded)
+            {
+                DebugLogger.LogError(LogWriter.SceneManager, $"Failed to load scene by resource manager: {sceneInfo.ScenePath}");
+                return false;
             }
 
             // 加载完成，进度为1
@@ -326,6 +323,8 @@ namespace Manager.SceneManager
                 SceneId = sceneInfo.SceneId,
                 IsMainScene = isMainScene
             });
+
+            return true;
         }
 
         #endregion

@@ -1,0 +1,111 @@
+using UnityEngine;
+
+namespace Fuel.Log
+{
+    public static class DebugLogger
+    {
+        public static bool Enable { get; set; } = true;
+
+        public static void Log(LogWriter writer, object message)
+        {
+            if (!Enable) return;
+            Debug.Log(FormatMessage(writer, message));
+        }
+
+        public static void LogWarning(LogWriter writer, object message)
+        {
+            if (!Enable) return;
+            Debug.LogWarning(FormatMessage(writer, message));
+        }
+
+        public static void LogError(LogWriter writer, object message)
+        {
+            if (!Enable) return;
+            Debug.LogError(FormatMessage(writer, message));
+        }
+
+        public static void Log(object message)
+        {
+            if (!Enable) return;
+            Debug.Log(FormatMessage(LogWriter.Default, message));
+        }
+
+        public static void LogWarning(object message)
+        {
+            if (!Enable) return;
+            Debug.LogWarning(FormatMessage(LogWriter.Default, message));
+        }
+
+        public static void LogError(object message)
+        {
+            if (!Enable) return;
+            Debug.LogError(FormatMessage(LogWriter.Default, message));
+        }
+
+        public static void Log(LogWriter writer, string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.Log(FormatMessage(writer, message, args));
+        }
+
+        public static void LogWarning(LogWriter writer, string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.LogWarning(FormatMessage(writer, message));
+        }
+
+        public static void LogError(LogWriter writer, string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.LogError(FormatMessage(writer, message, args));
+        }
+
+        public static void Log(string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.Log(FormatMessage(LogWriter.Default, message, args));
+        }
+
+        public static void LogWarning(string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.LogWarning(FormatMessage(LogWriter.Default, message));
+        }
+
+        public static void LogError(string message, params object[] args)
+        {
+            if (!Enable) return;
+            Debug.LogError(FormatMessage(LogWriter.Default, message, args));
+        }
+
+        public static string Color(object message, string color)
+        {
+            return $"<color={color}>{message}</color>";
+        }
+
+        public static string Bold(object message)
+        {
+            return $"<b>{message}</b>";
+        }
+
+        public static string Italic(object message)
+        {
+            return $"<i>{message}</i>";
+        }
+
+        private static string FormatMessage(LogWriter writer, string message, params object[] args)
+        {
+            return string.Format(message, args);
+        }
+        private static string FormatMessage(LogWriter writer, object message)
+        {
+            return writer == LogWriter.Default ? message?.ToString() : $"[{writer}] {message}";
+        }
+    }
+    public enum LogWriter
+    {
+        Default,
+        SceneManager,
+        ResourceManager,
+    }
+}
