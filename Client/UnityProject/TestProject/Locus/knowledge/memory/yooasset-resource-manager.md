@@ -10,13 +10,13 @@ readOnly: false
 aiMaintained: true
 explicitMaintenanceRules: true
 createdAt: 1779242958684
-updatedAt: 1779243234643
+updatedAt: 1779262263574
 ---
 
 # yooasset-resource-manager
 
 ## Summary
-YooAsset 桥接资源管理层的位置、初始化方式、支持模式、主要接口，以及 SceneManager 通过它加载/卸载场景。
+YooAsset 桥接资源管理层的位置、初始化方式、支持模式、主要接口；SceneManager 当前改回 Unity 原生场景加载/卸载。
 
 <!-- locus:maintain-rules:start -->
 Record verified resource-management architecture and usage constraints. Keep entries concise and update when API or initialization flow changes.
@@ -28,6 +28,6 @@ Record verified resource-management architecture and usage constraints. Keep ent
 - 默认包名为 `DefaultPackage`，初始化入口：`ResourceManager.Instance.InitializeAsync(packageName, playMode)`。
 - 当前支持 `EditorSimulateMode` 和 `OfflinePlayMode`；未配置远端服务前不要使用 Host/Web 模式。
 - 加载接口包括：`LoadAssetSync<T>`、`LoadAssetAsync<T>`、`InstantiateSync`、`InstantiateAsync`、`LoadSceneAsync`、`UnloadSceneAsync`、`ReleaseAsset`、`ReleaseAllAssets`、`UnloadUnusedAssetsAsync`。
-- 管理器缓存 YooAsset `AssetHandle`，调用方释放资源应通过 `ReleaseAsset(location)` �� `ReleaseAllAssets()`，不要直接释放内部 handle。
-- `Assets/Scripts/Manager/SceneManager/SceneManager.Loading.cs` 的场景加载/卸载已改为通过 `ResourceManager.Instance.LoadSceneAsync` 和 `ResourceManager.Instance.UnloadSceneAsync` 执行；场景配置 `SceneInfo.ScenePath` 现在需要是 YooAsset 可识别的场景 location。
+- 管理器缓存 YooAsset `AssetHandle`，调用方释放资源应通过 `ReleaseAsset(location)` 或 `ReleaseAllAssets()`，不要直接释放内部 handle。
+- `Assets/Scripts/Fuel/Manager/SceneManager/SceneManager.Loading.cs` 的场景加载/卸载已改回 Unity 原生 `UnityEngine.SceneManagement.SceneManager.LoadSceneAsync` / `UnloadSceneAsync`；场景配置 `SceneInfo.ScenePath` 需要是 Unity 原生可加载的 Build Settings 场景路径或场景名。
 <!-- locus:body:end -->

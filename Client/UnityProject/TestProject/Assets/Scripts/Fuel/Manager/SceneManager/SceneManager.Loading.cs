@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using Fuel.GameEvent;
 using Fuel.Scene;
 using Fuel.Log;
-using Fuel.Manager.ResourceManager;
-using YooAsset;
 
 namespace Manager.SceneManager
 {
@@ -230,8 +229,8 @@ namespace Manager.SceneManager
                 _sceneScripts.Remove(sceneId);
             }
 
-            // 通过资源管理器卸载场景
-            await ResourceManager.Instance.UnloadSceneAsync(sceneInfo.ScenePath);
+            // 通过 Unity 原生接口卸载场景
+            await UnloadNativeSceneAsync(sceneInfo);
 
             _loadedAdditiveScenes.RemoveAll(s => s.SceneId == sceneId);
 
@@ -281,29 +280,26 @@ namespace Manager.SceneManager
         private async UniTask<bool> LoadSceneAsync(SceneInfo sceneInfo, bool isMainScene,
             SceneData sceneData, Action<float> onProgress)
         {
-            var handle = await ResourceManager.Instance.LoadSceneAsync(
-                sceneInfo.ScenePath,
-                isMainScene
-                    ? UnityEngine.SceneManagement.LoadSceneMode.Single
-                    : UnityEngine.SceneManagement.LoadSceneMode.Additive,
-                UnityEngine.SceneManagement.LocalPhysicsMode.None,
-                true,
-                0,
-                progress =>
-                {
-                    progress = Mathf.Clamp01(progress);
-                    onProgress?.Invoke(progress);
-                    EventDispatcher.Instance.Dispatch(new Scene_LoadProgressEvent
-                    {
-                        SceneId = sceneInfo.SceneId,
-                        Progress = progress
-                    });
-                });
-
-            if (handle == null || handle.Status != EOperationStatus.Succeeded)
+            var loadMode = isMainScene
+                ? UnityEngine.SceneManagement.LoadSceneMode.Single
+                : UnityEngine.SceneManagement.LoadSceneMode.Additive;
+            var operation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneInfo.ScenePath, loadMode);
+            if (operation == null)
             {
-                DebugLogger.LogError(LogWriter.SceneManager, $"Failed to load scene by resource manager: {sceneInfo.ScenePath}");
+                DebugLogger.LogError(LogWriter.SceneManager, $"Failed to load scene by Unity SceneManager: {sceneInfo.ScenePath}");
                 return false;
+            }
+
+            while (!operation.isDone)
+            {
+                var progress = Mathf.Clamp01(operation.progress / 0.9f);
+                onProgress?.Invoke(progress);
+                EventDispatcher.Instance.Dispatch(new Scene_LoadProgressEvent
+                {
+                    SceneId = sceneInfo.SceneId,
+                    Progress = progress
+                });
+                await UniTask.Yield();
             }
 
             // 加载完成，进度为1
@@ -325,6 +321,28 @@ namespace Manager.SceneManager
             });
 
             return true;
+        }
+
+        private async UniTask UnloadNativeSceneAsync(SceneInfo sceneInfo)
+        {
+            var loadedScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(sceneInfo.ScenePath);
+            if (!loadedScene.IsValid())
+            {
+                loadedScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(Path.GetFileNameWithoutExtension(sceneInfo.ScenePath));
+            }
+
+            if (!loadedScene.IsValid() || !loadedScene.isLoaded)
+            {
+                return;
+            }
+
+            var operation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(loadedScene);
+            if (operation == null)
+            {
+                return;
+            }
+
+            await operation.ToUniTask();
         }
 
         #endregion

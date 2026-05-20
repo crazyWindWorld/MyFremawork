@@ -1,3 +1,6 @@
+using System;
+using Cysharp.Threading.Tasks;
+using Fuel.AssetManager;
 using UnityEngine;
 
 namespace Fuel.Scene
@@ -28,6 +31,8 @@ namespace Fuel.Scene
         /// </summary>
         public bool IsPaused { get; private set; }
 
+        protected virtual string AssetsGroupName => SceneInfo?.SceneId;
+
         #region 生命周期方法
 
         /// <summary>
@@ -39,7 +44,10 @@ namespace Fuel.Scene
         /// <summary>
         /// 场景退出时调用（场景卸载前）
         /// </summary>
-        public virtual void OnExit() { }
+        public virtual void OnExit()
+        {
+            AssetsLoadManager.Instance.ReleaseAllByGroup(AssetsGroupName);
+        }
 
         /// <summary>
         /// 场景暂停时调用
@@ -74,6 +82,11 @@ namespace Fuel.Scene
         #endregion
 
         #region 辅助方法
+        protected UniTask<T> LoadAssetAsync<T>(string path, string groupName = null) where T : UnityEngine.Object
+        {
+            return AssetsLoadManager.Instance.LoadAsync<T>(path, groupName ?? AssetsGroupName);
+        }
+
 
         /// <summary>
         /// 获取场景根物体上的指定组件

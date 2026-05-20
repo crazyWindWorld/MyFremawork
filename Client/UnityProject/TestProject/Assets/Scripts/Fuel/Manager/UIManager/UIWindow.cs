@@ -1,4 +1,6 @@
 using System;
+using Cysharp.Threading.Tasks;
+using Fuel.AssetManager;
 using UnityEngine;
 
 namespace Manager.UIManager
@@ -11,6 +13,8 @@ namespace Manager.UIManager
         public GameObject ViewObject { get; set; }
         public bool IsShow { get; private set; }
         public bool IsRelease { get; private set; }
+
+        protected virtual string AssetsGroupName => WindowId;
 
         public event Action<UIWindow> OnShowEvent;
         public event Action<UIWindow> OnHideEvent;
@@ -64,12 +68,18 @@ namespace Manager.UIManager
                 UnityEngine.Object.Destroy(ViewObject);
                 ViewObject = null;
             }
+            AssetsLoadManager.Instance.ReleaseAllByGroup(AssetsGroupName);
             OnDestroyEvent?.Invoke(this);
         }
 
         public virtual void OnReload()
         {
             IsRelease = false;
+        }
+
+        protected UniTask<T> LoadAssetAsync<T>(string path, string groupName = null) where T : UnityEngine.Object
+        {
+            return AssetsLoadManager.Instance.LoadAsync<T>(path, groupName ?? AssetsGroupName);
         }
 
         public virtual void RegisterEvents() { }
