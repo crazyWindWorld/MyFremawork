@@ -86,8 +86,6 @@ namespace Fuel.Scene
         {
             return AssetsLoadManager.Instance.LoadAsync<T>(path, groupName ?? AssetsGroupName);
         }
-
-
         /// <summary>
         /// 获取场景根物体上的指定组件
         /// </summary>
@@ -102,6 +100,28 @@ namespace Fuel.Scene
         protected T GetComponentInChildren<T>() where T : Component
         {
             return ViewObject?.GetComponentInChildren<T>();
+        }
+
+        /// <summary>
+        /// 查找场景中指定名称的物体上的指定组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        protected T FindObjectOfType<T>() where T : Component
+        {
+            return GameObject.FindObjectOfType<T>();
+        }
+
+        /// <summary>
+        /// 查找场景中指定名称的物体上的指定组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        protected T FindComponent<T>(string name) where T : Component
+        {
+            return GameObject.Find(name).GetComponent<T>();
         }
 
         #endregion
