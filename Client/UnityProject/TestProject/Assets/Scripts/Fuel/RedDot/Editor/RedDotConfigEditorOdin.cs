@@ -13,7 +13,7 @@ namespace Fuel.RedDot.Editor
 {
     public class RedDotConfigEditorOdin : EditorWindow
     {
-        [MenuItem("Tools/红点数据编辑器 (Odin) #Y")]
+        [MenuItem("Tools/RedDotTree/红点数据编辑器 #Y")]
         public static void ShowWindow()
         {
             GetWindow<RedDotConfigEditorOdin>("红点数据编辑器 (Odin)").minSize = new Vector2(1250, 800);
