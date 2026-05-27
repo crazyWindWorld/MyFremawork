@@ -42,6 +42,8 @@ namespace Fuel.RedDot.Editor
         private Vector2 _scrollPos;
         private Dictionary<string, bool> _expandedStates = new Dictionary<string, bool>();
 
+        private static readonly Color DuplicateColor = new Color(1f, 0.35f, 0.35f, 1f);
+
         private const float TooltipDelay = 0.5f;
         private RedDotConfigAsset.RedDotConfigData _hoverTarget;
         private double _hoverStartTime;
@@ -368,7 +370,8 @@ namespace Fuel.RedDot.Editor
 
         private void DrawRedDotItem(RedDotConfigAsset.RedDotConfigData data)
         {
-            GUI.color = _selectedItem == data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white;
+            bool isDup = IsDuplicate(data);
+            GUI.color = isDup ? DuplicateColor : (_selectedItem == data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white);
             float contentWidth = TableContentWidth;
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(TableWidth));
 
@@ -417,7 +420,8 @@ namespace Fuel.RedDot.Editor
         {
             Rect nodeRect = EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
             GUILayout.Space(indent * 20);
-            GUI.color = _selectedItem == node.Data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white;
+            bool isDup = IsDuplicate(node.Data);
+            GUI.color = isDup ? DuplicateColor : (_selectedItem == node.Data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white);
 
             bool hasChildren = node.Children.Count > 0;
             bool expanded = false;
@@ -532,6 +536,13 @@ namespace Fuel.RedDot.Editor
 
             EditorGUI.BeginChangeCheck();
 
+            if (IsDuplicateId(_selectedItem))
+                EditorGUILayout.HelpBox($"ID {_selectedItem.Id} 存在重复！", MessageType.Error);
+            if (IsDuplicatePath(_selectedItem))
+                EditorGUILayout.HelpBox($"路径 {_selectedItem.Path} 存在重复！", MessageType.Error);
+            if (IsDuplicateAlias(_selectedItem))
+                EditorGUILayout.HelpBox($"枚举名 {_selectedItem.Alias} 存在重复！", MessageType.Error);
+
             EditorGUILayout.LabelField("ID", _selectedItem.Id.ToString());
 
             EditorGUILayout.BeginHorizontal();
@@ -592,12 +603,14 @@ namespace Fuel.RedDot.Editor
 
             EditorGUILayout.Space(6);
             EditorGUILayout.LabelField("备注", EditorStyles.boldLabel);
-            string newRemark = EditorGUILayout.TextArea(GetRemark(_selectedItem.Path), GUILayout.MinHeight(40));
-            if (newRemark != GetRemark(_selectedItem.Path))
+            if(_selectedItem != null)
             {
-                SetRemark(_selectedItem.Path, newRemark);
+                string newRemark = EditorGUILayout.TextArea(GetRemark(_selectedItem.Path), GUILayout.MinHeight(40));
+                if (newRemark != GetRemark(_selectedItem.Path))
+                {
+                    SetRemark(_selectedItem.Path, newRemark);
+                }
             }
-
             EditorGUILayout.EndVertical();
         }
 
@@ -651,6 +664,46 @@ namespace Fuel.RedDot.Editor
         private bool ContainsIgnoreCase(string source, string value)
         {
             return !string.IsNullOrEmpty(source) && source.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private bool IsDuplicatePath(RedDotConfigAsset.RedDotConfigData data)
+        {
+            if (_configAsset?.Data == null) return false;
+            int count = 0;
+            for (int i = 0; i < _configAsset.Data.Count; i++)
+            {
+                if (_configAsset.Data[i].Path == data.Path) count++;
+            }
+            return count > 1;
+        }
+
+        private bool IsDuplicateId(RedDotConfigAsset.RedDotConfigData data)
+        {
+            if (_configAsset?.Data == null) return false;
+            int count = 0;
+            for (int i = 0; i < _configAsset.Data.Count; i++)
+            {
+                if (_configAsset.Data[i].Id == data.Id) count++;
+            }
+            return count > 1;
+        }
+
+        private bool IsDuplicateAlias(RedDotConfigAsset.RedDotConfigData data)
+        {
+            if (_configAsset?.Data == null || string.IsNullOrEmpty(data.Alias)) return false;
+            int count = 0;
+            for (int i = 0; i < _configAsset.Data.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(_configAsset.Data[i].Alias) &&
+                    string.Equals(_configAsset.Data[i].Alias, data.Alias, StringComparison.Ordinal))
+                    count++;
+            }
+            return count > 1;
+        }
+
+        private bool IsDuplicate(RedDotConfigAsset.RedDotConfigData data)
+        {
+            return IsDuplicatePath(data) || IsDuplicateId(data) || IsDuplicateAlias(data);
         }
 
         private void SetAllTreeFoldState(bool expanded)
