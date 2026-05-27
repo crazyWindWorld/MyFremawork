@@ -33,6 +33,7 @@ namespace Fuel.RedDot.Editor
 
         private RedDotConfigAsset _configAsset;
         private RedDotConfigAsset.RedDotConfigData _selectedItem;
+        private RedDotConfigAsset.RedDotConfigData _prevSelectedItem;
         private ViewMode _viewMode = ViewMode.List;
         private string _search = "";
         private List<RedDotConfigAsset.RedDotConfigData> _searchList = new List<RedDotConfigAsset.RedDotConfigData>();
@@ -529,9 +530,16 @@ namespace Fuel.RedDot.Editor
             if (_selectedItem == null || !_configAsset.Data.Contains(_selectedItem))
             {
                 _selectedItem = null;
+                _prevSelectedItem = null;
                 EditorGUILayout.HelpBox("从左侧列表或树中选择一个红点进行编辑。", MessageType.Info);
                 EditorGUILayout.EndVertical();
                 return;
+            }
+
+            if (_prevSelectedItem != _selectedItem)
+            {
+                _prevSelectedItem = _selectedItem;
+                GUIUtility.keyboardControl = 0;
             }
 
             EditorGUI.BeginChangeCheck();
