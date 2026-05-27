@@ -42,15 +42,109 @@ namespace Fuel.RedDot.Editor
         private Vector2 _scrollPos;
         private Dictionary<string, bool> _expandedStates = new Dictionary<string, bool>();
 
+        private const float TooltipDelay = 0.5f;
+        private RedDotConfigAsset.RedDotConfigData _hoverTarget;
+        private double _hoverStartTime;
+        private bool _showTooltip;
+        private Rect _tooltipRect;
+        private Vector2 _tooltipMousePos;
+
+        private const string RemarksFileName = "RedDotRemarks.json";
+        private Dictionary<string, string> _remarks = new Dictionary<string, string>();
+
+        private string RemarksFilePath =>
+            Path.Combine(Application.dataPath, "..", RemarksFileName);
+
         private void OnEnable()
         {
             LoadConfigAsset();
+            LoadRemarks();
         }
 
         private void LoadConfigAsset()
         {
             _configAsset = AssetDatabase.LoadAssetAtPath<RedDotConfigAsset>(
                 "Assets/AssetsPackage/Main/RedDot/RedDotConfigAsset.asset");
+        }
+
+        private void LoadRemarks()
+        {
+            _remarks.Clear();
+            if (!File.Exists(RemarksFilePath)) return;
+            try
+            {
+                string json = File.ReadAllText(RemarksFilePath, Encoding.UTF8);
+                var wrapper = JsonUtility.FromJson<RemarksWrapper>(json);
+                if (wrapper?.remarks != null)
+                {
+                    foreach (var entry in wrapper.remarks)
+                        _remarks[entry.path] = entry.remark;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Failed to load RedDot remarks: {e.Message}");
+            }
+        }
+
+        private void SaveRemarks()
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(RemarksFilePath);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                var wrapper = new RemarksWrapper { remarks = new List<RemarkEntry>() };
+                foreach (var kv in _remarks)
+                {
+                    if (!string.IsNullOrEmpty(kv.Value))
+                        wrapper.remarks.Add(new RemarkEntry { path = kv.Key, remark = kv.Value });
+                }
+                string json = JsonUtility.ToJson(wrapper, true);
+                File.WriteAllText(RemarksFilePath, json, Encoding.UTF8);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Failed to save RedDot remarks: {e.Message}");
+            }
+        }
+
+        private void RemoveRemark(string path)
+        {
+            if (_remarks.Remove(path))
+                SaveRemarks();
+        }
+
+        private string GetRemark(string path)
+        {
+            return _remarks.TryGetValue(path, out var remark) ? remark : "";
+        }
+
+        private void SetRemark(string path, string remark)
+        {
+            if (string.IsNullOrEmpty(remark))
+            {
+                _remarks.Remove(path);
+            }
+            else
+            {
+                _remarks[path] = remark;
+            }
+            SaveRemarks();
+        }
+
+        [Serializable]
+        private class RemarkEntry
+        {
+            public string path;
+            public string remark;
+        }
+
+        [Serializable]
+        private class RemarksWrapper
+        {
+            public List<RemarkEntry> remarks;
         }
 
         private void OnGUI()
@@ -76,6 +170,12 @@ namespace Fuel.RedDot.Editor
             DrawOperations();
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
+
+            UpdateTooltip();
+            DrawTooltip();
+
+            if (_hoverTarget != null)
+                Repaint();
         }
 
         private void DrawHeader()
@@ -289,6 +389,8 @@ namespace Fuel.RedDot.Editor
                 Repaint();
             }
 
+            TrackHover(data, selectableRect);
+
             if (GUILayout.Button("复制", GUILayout.Width(45)))
             {
                 _newPath = data.Path;
@@ -300,6 +402,7 @@ namespace Fuel.RedDot.Editor
                     "确定", "取消"))
                 {
                     _configAsset.Data.Remove(data);
+                    RemoveRemark(data.Path);
                     if (_selectedItem == data)
                         _selectedItem = null;
                     EditorUtility.SetDirty(_configAsset);
@@ -312,7 +415,7 @@ namespace Fuel.RedDot.Editor
 
         private void DrawTreeNode(TreeNode node, int indent)
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            Rect nodeRect = EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
             GUILayout.Space(indent * 20);
             GUI.color = _selectedItem == node.Data ? new Color(0.000f, 1.000f, 0.918f, 1.000f) : Color.white;
 
@@ -358,11 +461,13 @@ namespace Fuel.RedDot.Editor
                 {
                     _configAsset.Data.Remove(node.Data);
                     _expandedStates.Remove(node.Data.Path);
+                    RemoveRemark(node.Data.Path);
                     if (_selectedItem == node.Data)
                         _selectedItem = null;
                     EditorUtility.SetDirty(_configAsset);
                 }
             }
+            TrackHover(node.Data, nodeRect);
             GUI.color = Color.white;
             EditorGUILayout.EndHorizontal();
 
@@ -484,6 +589,14 @@ namespace Fuel.RedDot.Editor
                 _selectedItem = null;
             }
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("备注", EditorStyles.boldLabel);
+            string newRemark = EditorGUILayout.TextArea(GetRemark(_selectedItem.Path), GUILayout.MinHeight(40));
+            if (newRemark != GetRemark(_selectedItem.Path))
+            {
+                SetRemark(_selectedItem.Path, newRemark);
+            }
 
             EditorGUILayout.EndVertical();
         }
@@ -705,6 +818,107 @@ namespace Fuel.RedDot.Editor
             File.WriteAllText(path, stringBuilder.ToString());
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        private void TrackHover(RedDotConfigAsset.RedDotConfigData data, Rect rowRect)
+        {
+            if (Event.current.type != EventType.Repaint && Event.current.type != EventType.MouseMove)
+                return;
+
+            Vector2 mousePos = Event.current.mousePosition;
+            bool isInside = rowRect.height > 0 && rowRect.Contains(mousePos);
+
+            if (isInside)
+            {
+                if (_hoverTarget != data)
+                {
+                    _hoverTarget = data;
+                    _hoverStartTime = EditorApplication.timeSinceStartup;
+                    _showTooltip = false;
+                }
+                _tooltipRect = rowRect;
+                Repaint();
+            }
+            else if (_hoverTarget == data && rowRect.height > 0)
+            {
+                _hoverTarget = null;
+                _showTooltip = false;
+            }
+        }
+
+        private void UpdateTooltip()
+        {
+            if (_hoverTarget == null || string.IsNullOrEmpty(GetRemark(_hoverTarget.Path)))
+            {
+                _showTooltip = false;
+                return;
+            }
+
+            if (!_showTooltip && (EditorApplication.timeSinceStartup - _hoverStartTime) >= TooltipDelay)
+            {
+                _showTooltip = true;
+                _tooltipMousePos = Event.current.mousePosition;
+            }
+        }
+
+        private GUIStyle _tooltipStyle;
+        private Texture2D _tooltipBg;
+
+        private GUIStyle TooltipStyle
+        {
+            get
+            {
+                if (_tooltipStyle == null)
+                {
+                    _tooltipBg = MakeTex(1, 1, new Color(0.18f, 0.18f, 0.18f, 1f));
+                    _tooltipStyle = new GUIStyle(GUI.skin.box)
+                    {
+                        wordWrap = true,
+                        fontSize = 12,
+                        richText = false,
+                        alignment = TextAnchor.MiddleCenter,
+                        padding = new RectOffset(10, 10, 6, 6),
+                        normal = { background = _tooltipBg, textColor = Color.white }
+                    };
+                }
+                return _tooltipStyle;
+            }
+        }
+
+        private void DrawTooltip()
+        {
+            if (!_showTooltip || _hoverTarget == null) return;
+
+            string content = GetRemark(_hoverTarget.Path);
+
+            float maxWidth = 280f;
+            float height = TooltipStyle.CalcHeight(new GUIContent(content), maxWidth);
+            float tooltipWidth = maxWidth + 8;
+            float tooltipHeight = height + 12;
+
+            Rect tooltipRect = new Rect(_tooltipMousePos.x + 12, _tooltipMousePos.y - tooltipHeight - 4, tooltipWidth, tooltipHeight);
+
+            Vector2 windowSize = this.position.size;
+            if (tooltipRect.xMax > windowSize.x)
+                tooltipRect.x = windowSize.x - tooltipWidth - 4;
+            if (tooltipRect.x < 0) tooltipRect.x = 4;
+            if (tooltipRect.y < 0)
+                tooltipRect.y = _tooltipMousePos.y + 20;
+            if (tooltipRect.yMax > windowSize.y)
+                tooltipRect.y = windowSize.y - tooltipHeight - 4;
+
+            GUI.Box(tooltipRect, content, TooltipStyle);
+        }
+
+        private static Texture2D MakeTex(int width, int height, Color color)
+        {
+            Texture2D tex = new Texture2D(width, height);
+            Color[] pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = color;
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
         }
 
         private class TreeNode
