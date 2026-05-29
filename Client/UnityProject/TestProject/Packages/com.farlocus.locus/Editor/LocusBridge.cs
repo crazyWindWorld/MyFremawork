@@ -6,6 +6,7 @@ using UnityEditor.Compilation;
 using UnityEditor.SceneManagement;
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
@@ -69,6 +70,10 @@ namespace Locus
         private static volatile bool _isPlaying;
         private static volatile bool _isPaused;
         private static volatile string _activeScenePath = "";
+        private static int _editorUpdateEventSequence;
+        private static double _lastEditorUpdateEventAt = -1.0;
+        private static string _lastEditorUpdateSelectionKey = "";
+        private const double EditorUpdateEventIntervalSeconds = 0.25;
 
         // ───────────────── Runtime compilation cache ─────────────────
 
@@ -110,11 +115,14 @@ namespace Locus
         private static readonly List<string> _recompileErrors = new List<string>();
         private static readonly object _recompileErrorsLock = new object();
 
+        private static readonly string[] SnippetPreprocessorSymbols = BuildSnippetPreprocessorSymbols();
+
         private static readonly CSharpParseOptions SnippetParseOptions =
             new CSharpParseOptions(
                 kind: SourceCodeKind.Regular,
                 documentationMode: DocumentationMode.None,
-                languageVersion: LanguageVersion.CSharp9
+                languageVersion: LanguageVersion.CSharp9,
+                preprocessorSymbols: SnippetPreprocessorSymbols
             );
 
         private static readonly CSharpCompilationOptions SnippetCompilationOptions =
@@ -124,6 +132,167 @@ namespace Locus
                 allowUnsafe: false,
                 assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
             );
+
+        private static string[] BuildSnippetPreprocessorSymbols()
+        {
+            var symbols = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "UNITY_EDITOR"
+            };
+
+#if UNITY_EDITOR_WIN
+            symbols.Add("UNITY_EDITOR_WIN");
+            symbols.Add("UNITY_STANDALONE_WIN");
+#endif
+#if UNITY_EDITOR_OSX
+            symbols.Add("UNITY_EDITOR_OSX");
+            symbols.Add("UNITY_STANDALONE_OSX");
+#endif
+#if UNITY_EDITOR_LINUX
+            symbols.Add("UNITY_EDITOR_LINUX");
+            symbols.Add("UNITY_STANDALONE_LINUX");
+#endif
+            AddUnityVersionPreprocessorSymbols(symbols);
+
+#if UNITY_2020
+            symbols.Add("UNITY_2020");
+#endif
+#if UNITY_2021
+            symbols.Add("UNITY_2021");
+#endif
+#if UNITY_2022
+            symbols.Add("UNITY_2022");
+#endif
+#if UNITY_2023
+            symbols.Add("UNITY_2023");
+#endif
+#if UNITY_6000_0_OR_NEWER
+            symbols.Add("UNITY_6000_0_OR_NEWER");
+#endif
+#if UNITY_2020_3_OR_NEWER
+            symbols.Add("UNITY_2020_3_OR_NEWER");
+#endif
+#if UNITY_2021_3_OR_NEWER
+            symbols.Add("UNITY_2021_3_OR_NEWER");
+#endif
+#if UNITY_2022_3_OR_NEWER
+            symbols.Add("UNITY_2022_3_OR_NEWER");
+#endif
+#if UNITY_2023_1_OR_NEWER
+            symbols.Add("UNITY_2023_1_OR_NEWER");
+#endif
+#if ENABLE_INPUT_SYSTEM
+            symbols.Add("ENABLE_INPUT_SYSTEM");
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            symbols.Add("ENABLE_LEGACY_INPUT_MANAGER");
+#endif
+
+            try
+            {
+                var group = EditorUserBuildSettings.selectedBuildTargetGroup;
+                string raw = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+                if (!string.IsNullOrEmpty(raw))
+                {
+                    string[] customSymbols = raw.Split(';');
+                    for (int i = 0; i < customSymbols.Length; i++)
+                    {
+                        string symbol = customSymbols[i].Trim();
+                        if (!string.IsNullOrEmpty(symbol))
+                            symbols.Add(symbol);
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            var list = new List<string>(symbols);
+            list.Sort(StringComparer.Ordinal);
+            return list.ToArray();
+        }
+
+        private static void AddUnityVersionPreprocessorSymbols(HashSet<string> symbols)
+        {
+            string version = Application.unityVersion ?? "";
+            string[] parts = version.Split('.');
+            int major = parts.Length > 0 ? ReadLeadingInt(parts[0]) : -1;
+            int minor = parts.Length > 1 ? ReadLeadingInt(parts[1]) : -1;
+            int patch = parts.Length > 2 ? ReadLeadingInt(parts[2]) : -1;
+            if (major <= 0)
+                return;
+
+            symbols.Add("UNITY_" + major.ToString(CultureInfo.InvariantCulture));
+            if (minor >= 0)
+            {
+                string majorMinor = "UNITY_" +
+                    major.ToString(CultureInfo.InvariantCulture) +
+                    "_" +
+                    minor.ToString(CultureInfo.InvariantCulture);
+                symbols.Add(majorMinor);
+                symbols.Add(majorMinor + "_OR_NEWER");
+
+                int firstMinor = major >= 6000 ? 0 : 1;
+                for (int currentMinor = firstMinor; currentMinor <= minor; currentMinor++)
+                {
+                    symbols.Add(
+                        "UNITY_" +
+                        major.ToString(CultureInfo.InvariantCulture) +
+                        "_" +
+                        currentMinor.ToString(CultureInfo.InvariantCulture) +
+                        "_OR_NEWER");
+                }
+            }
+
+            if (minor >= 0 && patch >= 0)
+            {
+                symbols.Add(
+                    "UNITY_" +
+                    major.ToString(CultureInfo.InvariantCulture) +
+                    "_" +
+                    minor.ToString(CultureInfo.InvariantCulture) +
+                    "_" +
+                    patch.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        private static int ReadLeadingInt(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return -1;
+
+            int end = 0;
+            while (end < value.Length && char.IsDigit(value[end]))
+                end++;
+            if (end == 0)
+                return -1;
+
+            int result;
+            return int.TryParse(value.Substring(0, end), NumberStyles.None, CultureInfo.InvariantCulture, out result)
+                ? result
+                : -1;
+        }
+
+        [Serializable]
+        private sealed class EditorUpdatePayload
+        {
+            public int sequence;
+            public double timeSinceStartup;
+            public bool isPlaying;
+            public bool isPaused;
+            public string activeScenePath;
+            public EditorSelectionSnapshot selection;
+        }
+
+        [Serializable]
+        private sealed class EditorSelectionSnapshot
+        {
+            public string kind;
+            public string name;
+            public string type;
+            public string path;
+            public int instanceId;
+        }
 
         // ───────────────── Lifecycle ─────────────────
 
@@ -336,13 +505,20 @@ namespace Locus
             SetCompileResult("ok");
         }
 
-        private static void InvalidateCompilationCaches()
+        private static void InvalidateExecuteCodeMetadataReferences()
         {
             lock (_compileCacheLock)
             {
                 _metadataReferencesReady = false;
                 _cachedMetadataReferences = null;
             }
+        }
+
+        private static void InvalidateCompilationCaches()
+        {
+            InvalidateExecuteCodeMetadataReferences();
+            InvalidateViewScriptCache();
+            InvalidateSkillPackageAssemblyCache();
         }
 
         // ───────────────── Main-thread dispatcher ─────────────────
@@ -487,6 +663,7 @@ namespace Locus
 
             PumpRunStates();
             PumpExecuteCodeAsyncRuntime();
+            MaybeSendEditorUpdateEvent();
 
             // Detect "no compilation started" after request_recompile
             if (_recompileCheckFrames >= 0)
@@ -542,6 +719,69 @@ namespace Locus
                     Debug.LogError("[Locus] Main-thread action failed: " + ex);
                 }
             }
+        }
+
+        private static void MaybeSendEditorUpdateEvent()
+        {
+            double now = EditorApplication.timeSinceStartup;
+            UnityEngine.Object selection = Selection.activeObject;
+            string selectionKey = selection != null ? selection.GetInstanceID().ToString() : "none";
+            bool selectionChanged = !string.Equals(selectionKey, _lastEditorUpdateSelectionKey, StringComparison.Ordinal);
+            if (!selectionChanged && _lastEditorUpdateEventAt >= 0 && now - _lastEditorUpdateEventAt < EditorUpdateEventIntervalSeconds)
+                return;
+
+            _lastEditorUpdateSelectionKey = selectionKey;
+            _lastEditorUpdateEventAt = now;
+            _editorUpdateEventSequence++;
+
+            var payload = new EditorUpdatePayload
+            {
+                sequence = _editorUpdateEventSequence,
+                timeSinceStartup = now,
+                isPlaying = _isPlaying,
+                isPaused = _isPaused,
+                activeScenePath = _activeScenePath,
+                selection = BuildEditorSelectionSnapshot(selection)
+            };
+            SendEventToRust("unity-editor-update", JsonUtility.ToJson(payload));
+        }
+
+        private static EditorSelectionSnapshot BuildEditorSelectionSnapshot(UnityEngine.Object selection)
+        {
+            if (selection == null)
+            {
+                return new EditorSelectionSnapshot
+                {
+                    kind = "none",
+                    name = "",
+                    type = "",
+                    path = "",
+                    instanceId = 0
+                };
+            }
+
+            string path = AssetDatabase.GetAssetPath(selection) ?? "";
+            return new EditorSelectionSnapshot
+            {
+                kind = EditorSelectionKind(selection, path),
+                name = selection.name ?? "",
+                type = selection.GetType().FullName ?? selection.GetType().Name,
+                path = path,
+                instanceId = selection.GetInstanceID()
+            };
+        }
+
+        private static string EditorSelectionKind(UnityEngine.Object selection, string path)
+        {
+            if (selection is Material)
+                return "material";
+            if (selection is GameObject)
+                return "gameObject";
+            if (selection is Component)
+                return "component";
+            if (!string.IsNullOrEmpty(path))
+                return "asset";
+            return "object";
         }
 
         // ───────────────── Pipe server loop ─────────────────
@@ -929,6 +1169,23 @@ namespace Locus
                         return OkResponse(reqId, status);
                     }
 
+                    case "get_console_text":
+                    {
+                        var tcs = new TaskCompletionSource<PipeEnvelope>();
+                        PostToMainThread(delegate
+                        {
+                            try
+                            {
+                                tcs.SetResult(OkResponse(reqId, BuildConsoleTextPayloadJson()));
+                            }
+                            catch (Exception ex)
+                            {
+                                tcs.SetResult(ErrorResponse(reqId, ex.ToString()));
+                            }
+                        });
+                        return await tcs.Task;
+                    }
+
                     case "exit_play_mode":
                     {
                         if (!_isPlaying)
@@ -994,6 +1251,36 @@ namespace Locus
 
                     case "compile_run_states":
                         return await HandleCompileRunStates(reqId, msg.message);
+
+                    case "compile_named":
+                        return await HandleCompileNamed(reqId, msg.message);
+
+                    case "compile_skill_package":
+                        return await HandleCompileSkillPackage(reqId, msg.message);
+
+                    case "invoke_skill_package":
+                        return await HandleInvokeSkillPackage(reqId, msg.message);
+
+                    case "invoke_named":
+                        return await HandleInvokeNamed(reqId, msg.message);
+
+                    case "invoke_named_cached":
+                        return await HandleInvokeNamedCached(reqId, msg.message);
+
+                    case "view_binding_read":
+                        return await HandleViewBindingRead(reqId, msg.message);
+
+                    case "view_binding_write":
+                        return await HandleViewBindingWrite(reqId, msg.message);
+
+                    case "view_binding_apply":
+                        return await HandleViewBindingApply(reqId, msg.message);
+
+                    case "view_binding_discover":
+                        return await HandleViewBindingDiscover(reqId, msg.message);
+
+                    case "capture_viewport":
+                        return await HandleCaptureViewport(reqId, msg.message);
 
                     case "request_recompile":
                     {
@@ -1191,12 +1478,6 @@ namespace Locus
 
                     case "read_yaml":
                         return await HandleReadYaml(reqId, msg.message);
-
-                    case "set_serialized_data":
-                        return await HandleSetSerializedData(reqId, msg.message);
-
-                    case "get_serialized_data":
-                        return await HandleGetSerializedData(reqId, msg.message);
 
                     case "reload_open_scenes":
                     {

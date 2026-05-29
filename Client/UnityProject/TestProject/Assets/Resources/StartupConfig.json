@@ -1,0 +1,16 @@
+{
+    "appVersion": "1.0.0",
+    "versionUrl": "https://cdn.example.com/version.json",
+    "packageName": "Main",
+    "defaultHostUrl": "https://cdn.example.com/game/Main",
+    "fallbackHostUrl": "https://backup.example.com/game/Main",
+    "hotUpdateDllPath": "Assets/AssetsPackage/Main/HotUpdate/HotUpdate.dll.bytes",
+    "aotMetadataDllPaths": [
+        "Assets/AssetsPackage/Main/HotUpdate/mscorlib.dll.bytes",
+        "Assets/AssetsPackage/Main/HotUpdate/System.dll.bytes",
+        "Assets/AssetsPackage/Main/HotUpdate/System.Core.dll.bytes"
+    ],
+    "configPathPattern": "Assets/AssetsPackage/Main/Configs/{0}",
+    "hotUpdateEntryType": "HotUpdate.GameEntry.HotUpdateEntry",
+    "hotUpdateEntryMethod": "StartAsync"
+}
